@@ -8,6 +8,6 @@ PrimaryAbility::PrimaryAbility() {
 PrimaryAbility::~PrimaryAbility() {
     std::cout<< "Abilité primaire détruite" << std::endl;
 }
-void PrimaryAbility::trigger(Player Owner, Player opponent) {
+void PrimaryAbility::trigger(Player& Owner, Player& opponent) {
     std::cout<< "Abilité primaire déclenchée" << std::endl;
 }

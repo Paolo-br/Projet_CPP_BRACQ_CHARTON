@@ -1,5 +1,9 @@
 #include <iostream>
+#include <string>
 #include "Card.h"
+#include "Faction.h"
+#include "Player.h"
+
 
 Card::Card(std::string name, int cost, Faction faction, std::string type)
     : m_name(name), m_cost(cost), m_faction(faction), m_type(type) 
@@ -46,5 +50,13 @@ void Card::setType(std::string type) {
 }
 
 
-void Card::play(Player owner, Player opponent) {
+void Card::play(Player& owner, Player& opponent) {
+    std::cout << "Carte jouée : " << m_name << std::endl;
+    std::cout << "Joueur : " << owner.getName() << std::endl;
+    std::cout << "Opposant : " << opponent.getName() << std::endl;
+}
+
+
+bool Card::operator==(const Card& other) const {
+    return m_name == other.m_name; // Comparez les cartes par leur nom
 }

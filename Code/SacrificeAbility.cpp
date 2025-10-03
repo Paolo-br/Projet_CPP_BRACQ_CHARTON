@@ -1,13 +1,17 @@
+#include "SacrificeAbility.h"
 #include "Player.h"
 #include <iostream>
-#include "SacrificeAbility.h"
 
 SacrificeAbility::SacrificeAbility() {
-    std::cout<< "Abilité de sacrifice crée" << std::endl;
+    std::cout << "Abilité de sacrifice créée" << std::endl;
 }
+
 SacrificeAbility::~SacrificeAbility() {
-    std::cout<< "Abilité de sacrifice détruite" << std::endl;
+    std::cout << "Abilité de sacrifice détruite" << std::endl;
 }
-void SacrificeAbility::trigger(Player Owner, Player opponent) {
-    std::cout<< "Abilité de sacrifice déclenchée" << std::endl;
+
+void SacrificeAbility::trigger(Player& owner, Player& opponent) {
+    std::cout << "Abilité de sacrifice déclenchée" << std::endl;
+    std::cout << "Joueur : " << owner.getName() << std::endl;
+    std::cout << "Opposant : " << opponent.getName() << std::endl;
 }

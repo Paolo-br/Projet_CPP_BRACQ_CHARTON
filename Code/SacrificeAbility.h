@@ -1,12 +1,13 @@
-#ifndef __SACRIFICEABILITY_H
-#define __SACRIFICEABILITY_H
-#include "Player.h"
+#ifndef __SACRIFICE_ABILITY_H
+#define __SACRIFICE_ABILITY_H
+
 #include "Ability.h"
 
 class SacrificeAbility : public Ability {
     public:
-    SacrificeAbility() {}
-    ~SacrificeAbility() {}
-    void trigger(Player Owner, Player opponent) override {}
-
+    SacrificeAbility();
+    ~SacrificeAbility();
+    void trigger(Player& owner, Player& opponent) override;
 };
+
+#endif
