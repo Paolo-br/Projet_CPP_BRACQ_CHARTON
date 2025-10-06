@@ -7,9 +7,9 @@ class Player;
 
 class PrimaryAbility : public Ability {
     public:
-    PrimaryAbility() {}
-    ~PrimaryAbility() {}
-    void trigger(Player& Owner, Player& opponent) override;
+    PrimaryAbility();
+    ~PrimaryAbility();
+    void trigger(Player& owner, Player& opponent) override;
 
 };
 #endif

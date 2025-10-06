@@ -8,6 +8,8 @@ AllyAbility::AllyAbility() {
 AllyAbility::~AllyAbility() {
     std::cout<< "Abilité d'allié détruite" << std::endl;
 }
-void AllyAbility::trigger(Player& Owner, Player& opponent) {
+void AllyAbility::trigger(Player& owner, Player& opponent) {
     std::cout<< "Abilité d'allié déclenchée" << std::endl;
+        std::cout << "Joueur : " << owner.getName() << std::endl;
+    std::cout << "Opposant : " << opponent.getName() << std::endl;
 }

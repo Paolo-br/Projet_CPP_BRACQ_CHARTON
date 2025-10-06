@@ -3,32 +3,44 @@
 
 #include <iostream>
 #include <string>
-#include <vector>
 #include <list>
-
 #include "Deck.h"
 #include "Card.h"
+#include"Hand.h"
+#include "DiscardPile.h"
 
-class Player{
+class Player {
+private:
     std::string m_name;
     int m_health;
     int m_gold;
     Deck m_deck;
-    std::list<Card> m_hand;
-    std::list<Card> m_discardPile;
-    public:
-    Player(std::string name, int health,int gold, Deck deck, std::list<Card> hand, std::list<Card> discardPile);
+    Hand m_hand;
+    DiscardPile m_discardPile;
+
+public:
+    Player(const std::string& name, int health, int gold, const Deck& deck,
+           const std::list<Card>& hand, const std::list<Card>& discardPile);
     ~Player();
-    std::string getName();
-    int getHealth();
-    Deck getDeck();
-    std::list<Card> getDiscardPile();
-    void setName(std::string name);
+
+    std::string getName() const;
+    int getHealth() const;
+    int getGold() const;
+    Deck& getDeck();
+    DiscardPile& getDiscardPile();
+    Hand& getHand();
+
+
+    void setName(const std::string& name);
     void setHealth(int health);
-    void addCardDeck(Card card);
-    void discard(Card card);
-    void drawCard(Card card);
-    void sacrifice(Card card);
-    void buyCard(Card card);
+    void setGold(int gold);
+
+    void addCardDeck(Card& card);
+    void addCardDiscard(Card& card);
+    void discard(const Card& card);
+    void drawCard(const Card& card);
+    void sacrifice(const Card& card);
+    void buyCard(Card& card);
 };
+
 #endif

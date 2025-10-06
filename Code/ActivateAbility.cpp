@@ -8,6 +8,8 @@ ActivateAbility::ActivateAbility() {
 ActivateAbility::~ActivateAbility() {
     std::cout<< "Abilité activable détruite" << std::endl;
 }
-void ActivateAbility::trigger(Player& Owner, Player& opponent) {
+void ActivateAbility::trigger(Player& owner, Player& opponent) {
     std::cout<< "Abilité activable déclenchée" << std::endl;
+    std::cout << "Joueur : " << owner.getName() << std::endl;
+    std::cout << "Opposant : " << opponent.getName() << std::endl;
 }

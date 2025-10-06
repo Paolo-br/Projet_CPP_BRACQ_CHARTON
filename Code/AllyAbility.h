@@ -7,9 +7,9 @@ class Player;
 
 class AllyAbility :public Ability {
     public:
-    AllyAbility() {}
-    ~AllyAbility() {}
-    void trigger(Player& Owner, Player& opponent) override;
+    AllyAbility();
+    ~AllyAbility();
+    void trigger(Player& owner, Player& opponent) override;
 
 }
 ;
