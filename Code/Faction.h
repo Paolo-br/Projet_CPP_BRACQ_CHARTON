@@ -3,6 +3,7 @@
 #include <string>
 
 enum class Faction {
+    None,
     Guilde,
     Necros,
     Imperial,

@@ -37,4 +37,12 @@ Card Deck::draw(){
 void Deck::addCard(Card& card){
     m_cards.push_back(card);
 }
+bool Deck::isEmpty() const {
+    return m_cards.empty();
+}
+
+size_t Deck::size() const {
+    return m_cards.size();
+}
+
 

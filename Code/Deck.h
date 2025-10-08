@@ -24,5 +24,7 @@ class Deck {
     std::list<Card> getCards();
     Card draw();
     void addCard(Card& card); //Est fait lors de l'achat d'une carte
+    bool isEmpty() const;
+    size_t size() const;
 };
 #endif

@@ -12,7 +12,12 @@ class Market{
     Market();
     Market(std::list<Card> visibleCards, Deck marketDeck);
     ~Market();
+    void initializeBaseSet();
+    void initializeFireGems();
+    void initializePlayerDeckCards();
     void addCard(Card card);
     void buyCard(Player& p, Card card);
+    void removeCardFromMarket(Card& card);
+
 };
 #endif 

@@ -1,14 +1,13 @@
-#ifndef GAME_H
-#define GAME_H
+#ifndef __GAME_H
+#define __GAME_H
 
 #include <vector>
 #include "Player.h"
 #include "Market.h"
-#include "GameSettings.h"
 #include "Turn.h"
+#include "GameSettings.h"
 
 class Game {
-private:
     std::vector<Player> players;
     Market market;
     GameSettings settings;
@@ -20,12 +19,14 @@ public:
     void addPlayer(const Player& player);
     void start();
     void playTurn();
+    void advanceTurn();
     void endGame();
 
-    
+    bool checkEndCondition() const;
+
     std::vector<Player>& getPlayers();
     Market& getMarket();
     GameSettings& getSettings();
 };
 
-#endif // GAME_H
+#endif
