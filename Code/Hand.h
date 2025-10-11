@@ -2,16 +2,28 @@
 #define __HAND_H
 #include <iostream>
 #include <list>
+#include <vector>
 #include "Card.h"
 
 class Hand {
-    std::list<Card> m_cards;
+    std::vector<Card*> m_cards;
     public:
-    Hand(std::list<Card> cards);
+     // RÈGLE DES 0 - Pas besoin de destructeur/copie personnalisés
+    Hand();
+    Hand(std::vector<Card*> cards);
     ~Hand();
-    void add(Card card);
-    void remove(Card card);
-    void show();
+    void add(Card* card);
+    Card* draw();
+    bool remove(Card* card);
+    bool isEmpty() const;
+    size_t size() const;
+    void clear();
+    std::vector<Card*> getCards() const;
+
+    Card* getCardAt(int index);
+    const Card* getCardAt(int index) const;
+    Card* removeCardAt(int index);
+    bool contains(const Card* card) const;
 };
 
 #endif

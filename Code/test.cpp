@@ -3,6 +3,8 @@
 #include <vector>
 #include "Player.h"
 #include "Deck.h"
+#include "Hand.h"
+#include "DiscardPile.h"
 #include "Card.h"
 #include "ActionCard.h"
 #include "ItemCard.h"
@@ -21,166 +23,54 @@
 #include "SacrificeAbility.h"
 #include "Faction.h"
 
-using namespace std;
 
 int main() {
-    cout << "===== 🧪 DÉBUT DES TESTS HERO REALMS =====" << endl;
+    // Créer un joueur et un tour pour les tests
+    Player player("TestPlayer", 50, Deck(), Hand(), DiscardPile());
+    Turn turn(player);
 
-    // ------------------- TEST CARD DE BASE -------------------
-    Card c1("Épée Courte", 0, Faction::Imperial, "Item");
-    Card c2("Dague", 0, Faction::Guilde, "Item");
-    Card c3("Rubis", 1, Faction::Necros, "Item");
-    cout << "Cartes de base créées : " << c1.getName() << ", " << c2.getName() << ", " << c3.getName() << endl;
+    // Créer des effets pour les cartes
+    std::vector<Effect*> goldEffects;
+    goldEffects.push_back(new GoldEffect(1));
 
-    // ------------------- TEST DECK -------------------
-    list<Card> startingCards = {c1, c2, c3};
-    Deck deck(startingCards);
-    cout << "Deck initialisé avec " << startingCards.size() << " cartes." << endl;
+    std::vector<Effect*> attackEffects;
+    attackEffects.push_back(new AttackEffect(2));
 
-    // ------------------- TEST PLAYER -------------------
-    Player p1("Alice", 50, 5, deck, {}, {});
-    Player p2("Bob", 50, 3, deck, {}, {});
-    cout << "Joueurs créés : " << p1.getName() << " et " << p2.getName() << endl;
+    std::list<Ability*> championAbilities;
+    championAbilities.push_back(new PrimaryAbility());
 
-    p1.drawCard(c1);
-    p1.discard(c2);
-    cout << p1.getName() << " pioche et défausse une carte." << endl;
+    // Créer des cartes
+    ItemCard* goldCard = new ItemCard("Or", 0, Faction::None, "Item", goldEffects);
+    ActionCard* attackCard = new ActionCard("Attaque", 1, Faction::None, "Action", attackEffects);
+    ChampionCard* warriorCard = new ChampionCard("Guerrier", 2, Faction::None, "Champion", 3, true, false, championAbilities);
 
-    // ------------------- TEST EFFECTS -------------------
-    GoldEffect gold(3);
-    AttackEffect atk(5);
-    HealEffect heal(4);
-    DrawEffect draw(2);
-    SacrificeEffect sac(1);
+    // Tester les méthodes de Card
+    std::cout << "Test des méthodes de Card:" << std::endl;
+    std::cout << "Nom de la carte Or: " << goldCard->getName() << std::endl;
+    std::cout << "Coût de la carte Or: " << goldCard->getCost() << std::endl;
+    std::cout << "Type de la carte Or: " << goldCard->getType() << std::endl;
 
-    cout << "Application des effets sur les joueurs..." << endl;
-    gold.apply(p1, p1);
-    atk.apply(p2, p1);
-    heal.apply(p1, p1);
-    draw.apply(p1, p1);
-    sac.apply(p1, p1);
+    // Tester les méthodes spécifiques à ItemCard
+    std::cout << "\nTest des méthodes spécifiques à ItemCard:" << std::endl;
+    goldCard->executeEffects(player, turn);
 
-    cout << "Effets appliqués avec succès." << endl;
+    // Tester les méthodes spécifiques à ActionCard
+    std::cout << "\nTest des méthodes spécifiques à ActionCard:" << std::endl;
+    attackCard->executeEffects(player, turn);
 
-    // ------------------- TEST ACTIONCARD & ITEMCARD -------------------
-    vector<Effect*> actionEffects = {new AttackEffect(4), new GoldEffect(2)};
-    ActionCard fireball("Boule de Feu", 6, Faction::Necros, "Action", actionEffects);
-    cout << "ActionCard test : " << fireball.getName() << endl;
-    fireball.play(p1, p2);
+    // Tester les méthodes spécifiques à ChampionCard
+    std::cout << "\nTest des méthodes spécifiques à ChampionCard:" << std::endl;
+    std::cout << "Défense du Guerrier: " << warriorCard->getDefense() << std::endl;
+    std::cout << "Le Guerrier est-il un Garde ? " << (warriorCard->isGuard() ? "Oui" : "Non") << std::endl;
+    warriorCard->takeDamage(2);
+    std::cout << "Dégâts actuels du Guerrier: " << warriorCard->getCurrentDamage() << std::endl;
+    std::cout << "Le Guerrier est-il assommé ? " << (warriorCard->isStunned() ? "Oui" : "Non") << std::endl;
+    warriorCard->executeEffects(player, turn);
 
-    vector<Effect*> itemEffects = {new HealEffect(3)};
-    ItemCard potion("Potion de Soin", 3, Faction::Imperial, "Item", itemEffects);
-    cout << "ItemCard test : " << potion.getName() << endl;
-    potion.play(p1, p1);
-
-    // ------------------- TEST CHAMPIONCARD + ABILITIES -------------------
-    list<Ability*> abilities;
-    abilities.push_back(new SacrificeAbility());
-    ChampionCard champ("Arkus, Dragon Imperial", 8, Faction::Imperial, "Champion", 6, true, false, abilities);
-    cout << "Champion créé : " << champ.getName() << " (Défense " << champ.getDefense() << ")" << endl;
-
-    champ.activate();
-    champ.defend();
-    champ.sacrifice();
-
-    // ------------------- TEST MARKET INITIALISATION -------------------
-    cout << "\n===== TEST INITIALISATION DU MARCHÉ =====" << endl;
-    
-    // Créer un marché vide
-    Market market;
-    
-    // Initialiser le marché avec toutes les cartes
-    cout << "Initialisation du marché en cours..." << endl;
-    market.initializeBaseSet();
-    
-    // Afficher les statistiques du marché
-    cout << "Marché initialisé avec succès !" << endl;
-    
-    // Tester l'achat d'une carte
-    cout << "\n----- Test d'achat de carte -----" << endl;
-    
-    // Simuler que le joueur a assez d'or
-    p1.setGold(10); // Donner de l'or au joueur
-    
-    // Afficher les cartes visibles disponibles
-    cout << "Cartes visibles sur le marché :" << endl;
-    // Note: Vous devrez peut-être ajouter une méthode getVisibleCards() dans Market.h
-    
-    // Tester l'achat d'une carte spécifique (première carte visible)
-    cout << "Test d'achat d'une carte..." << endl;
-    
-    // ------------------- TEST FIRE GEMS -------------------
-    cout << "\n----- Test des Gemmes de Feu -----" << endl;
-    Market fireGemMarket;
-    fireGemMarket.initializeFireGems();
-    cout << "Gemmes de Feu initialisées" << endl;
-
-    // ------------------- TEST PLAYER DECK CARDS -------------------
-    cout << "\n----- Test des cartes de deck joueur -----" << endl;
-    Market playerDeckMarket;
-    playerDeckMarket.initializePlayerDeckCards();
-    cout << "Cartes de deck joueur initialisées" << endl;
-
-    // ------------------- TEST GAME SETTINGS -------------------
-    GameSettings settings;
-    settings.enableGodMode();
-    settings.disableGodMode();
-    cout << "God mode activé puis désactivé." << endl;
-
-    // ------------------- TEST GAME COMPLET -------------------
-    cout << "\n===== TEST PARTIE COMPLÈTE =====" << endl;
-    Game game;
-    game.addPlayer(p1);
-    game.addPlayer(p2);
-    
-    cout << "Démarrage de la partie..." << endl;
-    game.start();
-    
-    cout << "Simulation d'un tour..." << endl;
-    game.playTurn();
-    
-    cout << "Fin de la partie..." << endl;
-    game.endGame();
-
-    // ------------------- TEST AVANCÉ DU MARCHÉ -------------------
-    cout << "\n===== TESTS AVANCÉS DU MARCHÉ =====" << endl;
-    
-    // Test d'ajout de carte au marché
-    Card testCard("Carte Test", 3, Faction::Imperial, "Action");
-    market.addCard(testCard);
-    cout << "Carte test ajoutée au marché" << endl;
-    
-    // Test avec différents types de cartes
-    cout << "\n----- Test des différentes factions -----" << endl;
-    
-    // Créer quelques cartes de test pour chaque faction
-    vector<Effect*> imperialEffects = {new GoldEffect(2), new HealEffect(3)};
-    ActionCard imperialCard("Test Imperial", 4, Faction::Imperial, "Action", imperialEffects);
-    
-    vector<Effect*> guildEffects = {new AttackEffect(3), new GoldEffect(1)};
-    ActionCard guildCard("Test Guilde", 3, Faction::Guilde, "Action", guildEffects);
-    
-    vector<Effect*> necrosEffects = {new AttackEffect(4), new SacrificeEffect(2)};
-    ActionCard necrosCard("Test Necros", 5, Faction::Necros, "Action", necrosEffects);
-    
-    vector<Effect*> wildEffects = {new AttackEffect(3), new DrawEffect(1)};
-    ActionCard wildCard("Test Wild", 4, Faction::Sauvage, "Action", wildEffects);
-    
-    cout << "Cartes de test créées pour toutes les factions" << endl;
-
-    cout << "\n===== TOUS LES TESTS SE SONT TERMINÉS AVEC SUCCÈS =====" << endl;
-
-
-    cout << "\nNettoyage de la mémoire..." << endl;
-    for (auto e : actionEffects) delete e;
-    for (auto e : itemEffects) delete e;
-    for (auto ab : abilities) delete ab;
-    for (auto e : imperialEffects) delete e;
-    for (auto e : guildEffects) delete e;
-    for (auto e : necrosEffects) delete e;
-    for (auto e : wildEffects) delete e;
-
-    cout << "Nettoyage terminé" << endl;
+    // Nettoyer la mémoire
+    delete goldCard;
+    delete attackCard;
+    delete warriorCard;
 
     return 0;
 }

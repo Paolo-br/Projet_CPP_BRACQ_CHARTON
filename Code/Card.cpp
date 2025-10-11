@@ -3,6 +3,7 @@
 #include "Card.h"
 #include "Faction.h"
 #include "Player.h"
+#include "Turn.h"   
 
 
 Card::Card(std::string name, int cost, Faction faction, std::string type)
@@ -12,11 +13,12 @@ Card::Card(std::string name, int cost, Faction faction, std::string type)
 }
 
 
-Card::~Card() {
-    std::cout << "Carte détruite " <<std::endl;
-}
 
 std::string Card::getName() {
+    return m_name;
+}
+
+std::string Card::getName() const{
     return m_name;
 }
 
@@ -28,10 +30,9 @@ Faction Card::getFaction() {
     return m_faction;
 }
 
-std::string Card::getType() {
+std::string Card::getType() const {
     return m_type;
 }
-
 
 void Card::setName(std::string name) {
     m_name = name;

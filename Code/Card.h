@@ -3,6 +3,8 @@
 #include <string>
 #include "Faction.h"
 
+class Turn; // déclaration anticipée
+
 class Player; // déclaration anticipée
 
 class Card {
@@ -13,16 +15,25 @@ class Card {
 
 	public:
 	Card(std::string name, int cost, Faction faction, std::string type);
-	virtual ~Card();
+	virtual ~Card()=default; // Règle des 0 - pas de gestion manuelle
+    
+
+
 	virtual std::string getName();
+    virtual std::string getName() const;
 	virtual int getCost();
     virtual Faction getFaction();
-    virtual std::string getType();
+    virtual std::string getType() const;
     virtual void setName(std::string name);
 	virtual void setCost(int cost);
     virtual void setFaction(Faction faction);
     virtual void setType(std::string type);
     virtual void play(Player& owner, Player& opponent); // à réfléchir si on initialise opponent à null	
     bool operator==(const Card& other) const;
+    
+    virtual void executeEffects(Player& player, Turn& turn) = 0;
+    virtual bool hasAllyAbility() const { return false; }
+    virtual bool hasSacrificeAbility() const { return false; }
+   
 };
 #endif

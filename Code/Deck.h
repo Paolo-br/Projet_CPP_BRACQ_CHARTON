@@ -15,16 +15,20 @@
 
 
 class Deck {
-    std::list<Card> m_cards;
+    std::vector<Card*> m_cards;
+
     public:
-    Deck() = default;
-    Deck(const std::list<Card>& cards);
+     // RÈGLE DES 0 - Pas besoin de destructeur/copie personnalisés
+    Deck();
+    Deck(const std::vector<Card*>& cards);
     ~Deck();
-    void shuffle(std::list<Card>& lst);
-    std::list<Card> getCards();
-    Card draw();
-    void addCard(Card& card); //Est fait lors de l'achat d'une carte
+    void shuffle();
+    std::vector<Card*> getCards();
+    Card* draw();
+    void addCard(Card* card); //Est fait lors de l'achat d'une carte
     bool isEmpty() const;
     size_t size() const;
+    void clear();
+    bool removeCard(Card* card);
 };
 #endif

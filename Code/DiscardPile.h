@@ -3,15 +3,25 @@
 
 #include <iostream>
 #include <list>
+#include <vector>
 #include "Card.h"
+
+class Deck;
+
 class DiscardPile {
-    std::list<Card> m_cards;
+    std::vector<Card*> m_cards;
+
     public:
-    DiscardPile(std::list<Card> cards);
+     // RÈGLE DES 0 - Pas besoin de destructeur/copie personnalisés
+    DiscardPile();
+    DiscardPile(std::vector<Card*> cards);
     ~DiscardPile();
-    void add(Card card);
+    void add(Card* card);
     void clear();
-    std::list<Card> getCards() { return m_cards; }
+    std::vector<Card*> getCards() { return m_cards; }
+    bool isEmpty() const;
+    size_t size() const;
+    Deck reshuffleIntoDeck();
 };
 
 

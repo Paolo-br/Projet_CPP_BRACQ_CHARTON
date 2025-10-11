@@ -5,6 +5,10 @@
 PrimaryAbility::PrimaryAbility() {
     std::cout<< "Abilité primaire crée" << std::endl;
 }
+
+PrimaryAbility::PrimaryAbility(std::vector<Effect*> effs):Ability(effs) {
+    std::cout<< "Abilité primaire crée" << std::endl;
+} 
 PrimaryAbility::~PrimaryAbility() {
     std::cout<< "Abilité primaire détruite" << std::endl;
 }
@@ -13,3 +17,5 @@ void PrimaryAbility::trigger(Player& owner, Player& opponent) {
     std::cout << "Joueur : " << owner.getName() << std::endl;
     std::cout << "Opposant : " << opponent.getName() << std::endl;
 }
+
+std::vector<Effect*> PrimaryAbility::getEffect() const { return m_effs;}

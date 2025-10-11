@@ -15,3 +15,5 @@ void SacrificeAbility::trigger(Player& owner, Player& opponent) {
     std::cout << "Joueur : " << owner.getName() << std::endl;
     std::cout << "Opposant : " << opponent.getName() << std::endl;
 }
+
+std::vector<Effect*> SacrificeAbility::getEffect() const {return m_effs;}

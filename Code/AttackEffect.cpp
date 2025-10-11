@@ -1,9 +1,17 @@
 #include "AttackEffect.h"
 #include "Player.h"
+
 #include <iostream>
 
-void AttackEffect::apply(Player& target, Player& owner) {
-    std::cout << owner.getName() << " inflige " << m_value << " points de dégâts à " << target.getName() << "." << std::endl;
-    int health = target.getHealth();
-    target.setHealth(health - m_value);
+
+AttackEffect::AttackEffect(int value) : m_value(value) {}
+
+void AttackEffect::apply(Player& player, Turn& turn) {
+    std::cout << player.getName() << " gagne " << m_value << " points de dégâts "<< std::endl;
+    turn.addCombat(m_value);
+
+}
+
+Effect* AttackEffect::clone() const {
+    return new AttackEffect(m_value);
 }

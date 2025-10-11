@@ -1,9 +1,14 @@
 #include "HealEffect.h"
 #include "Player.h"
-#include <iostream>
+#include "Turn.h"
 
-void HealEffect::apply(Player& target, Player& owner) {
-    std::cout << owner.getName() << " soigne " << m_value << " points de vie pour " << target.getName() << "." << std::endl;
-    int health = target.getHealth();
-    target.setHealth(health + m_value);
+HealEffect::HealEffect(int value) : m_value(value) {}
+
+void HealEffect::apply(Player& player, Turn& turn) {
+    std::cout << "On a tant de point d'attaque"<<turn.getCombatReserve()<<std::endl;
+    player.heal(m_value);
+}
+
+Effect* HealEffect::clone() const {
+    return new HealEffect(*this);
 }
