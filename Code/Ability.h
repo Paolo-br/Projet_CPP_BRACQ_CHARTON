@@ -6,6 +6,7 @@
 
 class Player;
 class Effect;
+class Turn;
 
 class Ability {
     protected:
@@ -15,8 +16,10 @@ class Ability {
     Ability(std::vector<Effect*> effs);
     virtual ~Ability()=default;
     int getValue()const;
-    virtual void trigger(Player& Owner, Player& opponent)=0;
+    virtual void trigger(Player& Owner, Turn& turn);
     virtual std::vector<Effect*> getEffect() const;
+    virtual std::string getName() const;
+    virtual Ability* clone() const = 0;
 
 };
 #endif

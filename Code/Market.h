@@ -15,8 +15,8 @@ class Effect;
 class Market{
     std::vector<Card*> m_visibleCards;
     Deck m_marketDeck;
-    std::list<ItemCard> m_fireGems;     
-    std::list<Card*> m_sacrificeZone; 
+    std::vector<ItemCard*> m_fireGems;     
+    std::vector<Card*> m_sacrificeZone; 
 
      // Template pour ajouter des effets
     template<typename T>
@@ -42,8 +42,8 @@ class Market{
     // Getters
     std::vector<Card*>& getVisibleCards();
     Deck& getMarketDeck();
-    std::list<ItemCard>& getFireGems();
-    std::list<Card*>& getSacrificeZone();
+    std::vector<ItemCard*>& getFireGems();
+    std::vector<Card*>& getSacrificeZone();
     int getVisibleCardsCount() const;
 
     // Utilitaires

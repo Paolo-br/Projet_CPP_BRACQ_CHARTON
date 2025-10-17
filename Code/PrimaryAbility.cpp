@@ -1,5 +1,6 @@
 #include "PrimaryAbility.h"
 #include "Player.h"
+#include "Turn.h"
 #include <iostream>
 
 PrimaryAbility::PrimaryAbility() {
@@ -12,10 +13,20 @@ PrimaryAbility::PrimaryAbility(std::vector<Effect*> effs):Ability(effs) {
 PrimaryAbility::~PrimaryAbility() {
     std::cout<< "Abilité primaire détruite" << std::endl;
 }
-void PrimaryAbility::trigger(Player& owner, Player& opponent) {
+void PrimaryAbility::trigger(Player& owner, Turn& turn) {
     std::cout<< "Abilité primaire déclenchée" << std::endl;
     std::cout << "Joueur : " << owner.getName() << std::endl;
-    std::cout << "Opposant : " << opponent.getName() << std::endl;
+    std::cout << "Or : " << turn.getGoldReserve() << std::endl;
 }
 
+std::string PrimaryAbility::getName() const {return "PrimaryAbility";}
+
 std::vector<Effect*> PrimaryAbility::getEffect() const { return m_effs;}
+
+PrimaryAbility* PrimaryAbility::clone() const {
+    std::vector<Effect*> clonedEffects;
+    for (const auto& effect : m_effs) {
+        clonedEffects.push_back(effect->clone());
+    }
+    return new PrimaryAbility(clonedEffects);
+}

@@ -10,8 +10,10 @@ class SacrificeAbility : public Ability {
     SacrificeAbility();
     SacrificeAbility(std::vector<Effect*> effs):Ability(effs){}
     ~SacrificeAbility();
-    void trigger(Player& owner, Player& opponent) override;
+    void trigger(Player& owner, Turn& turn) override;
     std::vector<Effect*> getEffect() const override;
+    std::string getName() const override;
+    SacrificeAbility* clone() const override;
 };
 
 #endif

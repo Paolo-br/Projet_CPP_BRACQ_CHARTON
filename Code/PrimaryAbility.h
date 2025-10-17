@@ -12,8 +12,10 @@ class PrimaryAbility : public Ability {
     PrimaryAbility(std::vector<Effect*> effs);
     PrimaryAbility();
     ~PrimaryAbility();
-    void trigger(Player& owner, Player& opponent) override;
+    void trigger(Player& owner, Turn& turn) override;
     std::vector<Effect*> getEffect() const override;
+    std::string getName() const override;
+    PrimaryAbility* clone() const override;
 
 };
 #endif

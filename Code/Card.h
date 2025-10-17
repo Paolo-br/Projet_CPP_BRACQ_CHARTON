@@ -14,15 +14,14 @@ class Card {
     std::string m_type;
 
 	public:
-	Card(std::string name, int cost, Faction faction, std::string type);
+	Card(const std::string name, int cost, Faction faction,const std::string type);
 	virtual ~Card()=default; // Règle des 0 - pas de gestion manuelle
     
 
 
-	virtual std::string getName();
-    virtual std::string getName() const;
-	virtual int getCost();
-    virtual Faction getFaction();
+	virtual std::string getName() const;
+	virtual int getCost() const;
+    virtual Faction getFaction() const;
     virtual std::string getType() const;
     virtual void setName(std::string name);
 	virtual void setCost(int cost);

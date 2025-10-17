@@ -5,11 +5,12 @@
 #include "Turn.h"
 
 class GoldEffect : public Effect {
-    int m_value;
 public:
     GoldEffect(int value);
     void apply(Player& player, Turn& turn) override;
     Effect* clone() const override;
+    std::string getName() const override;
+    int getValue();
 };
 
 #endif

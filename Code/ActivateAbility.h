@@ -12,8 +12,9 @@ class ActivateAbility : public Ability {
     ActivateAbility();
     ActivateAbility(std::vector<Effect*> effs);
     ~ActivateAbility();
-    void trigger(Player& owner, Player& opponent) override;
+    void trigger(Player& owner, Turn& turn) override;
     std::vector<Effect*> getEffect() const override;
-
+    std::string getName() const override;
+    ActivateAbility* clone() const override;
 };
 #endif

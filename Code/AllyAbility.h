@@ -12,8 +12,10 @@ class AllyAbility :public Ability {
     AllyAbility();
     AllyAbility(std::vector<Effect*> effs);
     ~AllyAbility();
-    void trigger(Player& owner, Player& opponent) override;
+    void trigger(Player& owner, Turn& turn) override;
     std::vector<Effect*> getEffect() const override;
+    std::string getName() const override;
+    AllyAbility* clone() const override;
 
 }
 ;

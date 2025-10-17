@@ -6,7 +6,7 @@
 #include "Turn.h"   
 
 
-Card::Card(std::string name, int cost, Faction faction, std::string type)
+Card::Card(const std::string name, int cost, Faction faction,const std::string type)
     : m_name(name), m_cost(cost), m_faction(faction), m_type(type) 
 {
     std::cout << "Carte créée"<< std::endl;
@@ -14,19 +14,15 @@ Card::Card(std::string name, int cost, Faction faction, std::string type)
 
 
 
-std::string Card::getName() {
+std::string Card::getName() const {
     return m_name;
 }
 
-std::string Card::getName() const{
-    return m_name;
-}
-
-int Card::getCost() {
+int Card::getCost() const {
     return m_cost;
 }
 
-Faction Card::getFaction() {
+Faction Card::getFaction() const {
     return m_faction;
 }
 

@@ -1,12 +1,11 @@
 #include <iostream>
 #include <string>
-#include <list>
 #include "ChampionCard.h"
 #include "Player.h"
 #include "Turn.h"
 
-ChampionCard::ChampionCard(std::string name, int cost, Faction faction, std::string type, 
-                           int defense, bool isGuard, bool isTapped, std::list<Ability*> abilities)
+ChampionCard::ChampionCard(const std::string name, int cost, Faction faction,const std::string type, 
+                           int defense, bool isGuard, bool isTapped, std::vector<Ability*> abilities)
     : Card(name, cost, faction, type), m_defense(defense), m_isGuard(isGuard), 
       m_isTapped(isTapped), m_abilities(abilities)
 {
@@ -128,7 +127,7 @@ bool ChampionCard::isStunned() const {
     return m_currentDamage >= m_defense;
 }
 
-std::list<Ability*> ChampionCard::getAbilities() {
+std::vector<Ability*> ChampionCard::getAbilities() {
     return m_abilities;
 }
 
@@ -159,7 +158,7 @@ void ChampionCard::setIsTapped(bool isTapped) {
     std::cout << this->getName() << ": état modifié à " << (isTapped ? "Démobilisé" : "Mobilisé") << std::endl;
 }
 
-void ChampionCard::setAbilities(std::list<Ability*> abilities) {
+void ChampionCard::setAbilities(std::vector<Ability*> abilities) {
     m_abilities = abilities;
 }
 
@@ -197,4 +196,51 @@ void ChampionCard::play(Player& owner, Player& opponent) {
     
     // Le champion entre en jeu mobilisé (ready)
     setReady(true);
+}
+
+void ChampionCard::printChampionCard(){
+    
+    std::vector<Ability*> liste_abi=m_abilities;
+    int n = Utils::countChar(getName());
+    n = n+ Utils::countSpaces(getName());
+
+    Faction faction = getFaction();
+    Utils::printBarre(n,0);
+    Utils::printCentered(getName(),n, "", "bold");
+    Utils::printBarre(n,1);
+    Utils::printCentered(getType(),n, "", "italic");
+    Utils::printVide(n);
+    Utils::printVide(n);
+    Utils::printVide(n);
+    Utils::printVide(n);
+    
+    for (Ability* e : liste_abi) {
+        std::vector<Effect*> temp = e->getEffect();
+        if(e->getName()=="ActivateAbility"){
+            Utils::printCentered("ActivateAbility",n);
+            for(Effect* e1 :temp){
+                if(e1->getName()=="AttackEffect"){Utils::printCentered(e1->getValue(), n, "red");}
+                if(e1->getName()=="HealEffect"){Utils::printCentered(e1->getValue(), n, "green");}
+                if(e1->getName()=="DrawEffect"){Utils::printCentered(e1->getValue(), n, "blue");}
+                if(e1->getName()=="SacrificeEffect"){Utils::printCentered(e1->getValue(), n, "grey");}
+            }
+        }
+        else if(e->getName()=="AllyAbility"){
+            Utils::printCentered("AllyAbility",n);
+            for(Effect* e1 :temp){
+                if(e1->getName()=="AttackEffect"){Utils::printCentered(e1->getValue(), n, "red");}
+                if(e1->getName()=="HealEffect"){Utils::printCentered(e1->getValue(), n, "green");}
+                if(e1->getName()=="DrawEffect"){Utils::printCentered(e1->getValue(), n, "blue");}
+                if(e1->getName()=="SacrificeEffect"){Utils::printCentered(e1->getValue(), n, "grey");}
+            }
+        }
+    }
+    
+    if(factionToString(faction) != "Aucune"){
+        Utils::printCentered(factionToString(faction),n+1);
+    }
+    if(getIsGuard()==true){
+        Utils::printCentered("Guard",n,"","bold");
+    }
+    Utils::printBarre(n,1);
 }

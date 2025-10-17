@@ -11,12 +11,14 @@ class Effect {
     int m_value; 
 
 public:
+    Effect(int value);
 
     virtual ~Effect() = default;
     int getValue() const;
     void setValue(int value);
     
-    virtual void apply(Player& player, Turn& turn) = 0;
+    virtual void apply(Player& player, Turn& turn);
+    virtual std::string getName() const;
     virtual Effect* clone() const = 0;
 };
 

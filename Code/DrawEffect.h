@@ -5,11 +5,11 @@
 
 class DrawEffect : public Effect {
 private:
-    int m_value;
 public:
     DrawEffect(int value);
     void apply(Player& player, Turn& turn) override;
     Effect* clone() const override;
+    std::string getName() const override;
 };
 
 #endif

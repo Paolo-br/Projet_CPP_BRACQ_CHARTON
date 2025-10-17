@@ -91,7 +91,7 @@ Card* Hand::removeCardAt(int index) {
 }
 
 // Vérifier si la main contient une carte spécifique
-bool Hand::contains(const Card* card) const {
+bool Hand::contains(Card* card) {
     for (size_t i = 0; i < m_cards.size(); i++) {
         if (m_cards[i]->getName() == card->getName()) {
             return true;

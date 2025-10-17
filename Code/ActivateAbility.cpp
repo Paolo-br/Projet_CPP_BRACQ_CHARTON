@@ -1,5 +1,6 @@
 #include "ActivateAbility.h"
 #include "Player.h"
+#include "Turn.h"
 #include <iostream>
 
 ActivateAbility::ActivateAbility() {
@@ -13,12 +14,23 @@ ActivateAbility::ActivateAbility(std::vector<Effect*> effs):Ability(effs) {
 ActivateAbility::~ActivateAbility() {
     std::cout<< "Abilité activable détruite" << std::endl;
 }
-void ActivateAbility::trigger(Player& owner, Player& opponent) {
+
+void ActivateAbility::trigger(Player& owner, Turn& turn) {
     std::cout<< "Abilité activable déclenchée" << std::endl;
     std::cout << "Joueur : " << owner.getName() << std::endl;
-    std::cout << "Opposant : " << opponent.getName() << std::endl;
+    std::cout << "Or : " << turn.getGoldReserve() << std::endl;
 }
+
+std::string ActivateAbility::getName() const{return "ActivateAbility";}
 
 std::vector<Effect*> ActivateAbility::getEffect() const {
     return m_effs;
+}
+
+ActivateAbility* ActivateAbility::clone() const {
+    std::vector<Effect*> clonedEffects;
+    for (const auto& effect : m_effs) {
+        clonedEffects.push_back(effect->clone());
+    }
+    return new ActivateAbility(clonedEffects);
 }

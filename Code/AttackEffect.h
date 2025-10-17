@@ -4,11 +4,13 @@
 #include "Effect.h"
 #include "Turn.h"
 class AttackEffect : public Effect {
-    int m_value; // Valeur des dégâts d'attaque
 public:
     AttackEffect(int value);
     void apply(Player& player, Turn& turn) override;
     Effect* clone() const override;
+    std::string getName() const override;
+    int getValue();
+
 };
 
 #endif

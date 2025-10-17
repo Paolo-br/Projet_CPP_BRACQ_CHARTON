@@ -4,7 +4,7 @@
 #include <iostream>
 
 
-SacrificeEffect::SacrificeEffect(int value) : m_value(value) {}
+SacrificeEffect::SacrificeEffect(int value) : Effect(value) {}
 
 Effect* SacrificeEffect::clone() const {
     return new SacrificeEffect(*this);
@@ -12,7 +12,11 @@ Effect* SacrificeEffect::clone() const {
 
 void SacrificeEffect::apply(Player& player, Turn& turn) {
     std::cout << player.getName() << " sacrifie " << turn.getCombatReserve() << " carte(s) de " << std::endl;
-    for (int i = 0; i < m_value; ++i) {
-        std::cout<< "SacrificeEffect: Sacrificing card " << (i + 1) << " of " << m_value << std::endl;
+    for (int i = 0; i < Effect::getValue(); ++i) {
+        std::cout<< "SacrificeEffect: Sacrificing card " << (i + 1) << " of " << Effect::getValue() << std::endl;
     }
 }
+
+std::string SacrificeEffect::getName() const {return "SacrificeEffect";}
+
+int SacrificeEffect::getValue(){return Effect::getValue();}

@@ -123,7 +123,7 @@ void Game::start() {
     // Premier tour
     m_gameStarted = true;
     m_currentPlayerIndex = 0;
-    m_currentTurn = Turn(m_players[m_currentPlayerIndex]);
+    m_currentTurn = Turn();  // Initialiser le tour (pas besoin de passer le joueur)
     
     std::cout << "\nLa partie commence ! " << m_players[m_currentPlayerIndex].getName() << " joue en premier." << std::endl;
     std::cout << "==========================================" << std::endl;
@@ -466,10 +466,13 @@ void Game::drawPhase() {
 
 // Passage au joueur suivant
 void Game::advanceTurn() {
-    static size_t turnIndex = 0;
-    turnIndex = (turnIndex + 1) % m_players.size();
-    m_currentTurn = Turn(m_players[turnIndex]);
-    std::cout << "\n>>> Prochain tour : " << m_currentTurn.getCurrentPlayer().getName() << " <<<" << std::endl;
+    // Passer au joueur suivant en utilisant m_currentPlayerIndex
+    m_currentPlayerIndex = (m_currentPlayerIndex + 1) % m_players.size();
+    
+    // Reset le tour pour le nouveau joueur
+    m_currentTurn.reset();
+    
+    std::cout << "\n>>> Prochain tour : " << getCurrentPlayer().getName() << " <<<" << std::endl;
 }
 
 // Fin de la partie

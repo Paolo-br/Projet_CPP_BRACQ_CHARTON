@@ -23,7 +23,7 @@ class Hand {
     Card* getCardAt(int index);
     const Card* getCardAt(int index) const;
     Card* removeCardAt(int index);
-    bool contains(const Card* card) const;
+    bool contains(Card* card);
 };
 
 #endif

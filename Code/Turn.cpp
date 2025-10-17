@@ -1,67 +1,7 @@
 #include "Turn.h"
 #include <iostream>
 
-Turn::Turn() : currentPlayer(nullptr), phase(Phase::MAIN), goldReserve(0), combatReserve(0) {}
-
-Turn::Turn(Player& player) : currentPlayer(&player), phase(Phase::MAIN), goldReserve(0), combatReserve(0) {}
-
-// 1. Destructeur
-Turn::~Turn() {
-    std::cout << "Destructeur Turn" << std::endl;
-    // Pas de delete car currentPlayer est géré ailleurs
-}
-
-// 2. Constructeur de copie
-Turn::Turn(const Turn& other)
-    : currentPlayer(other.currentPlayer), phase(other.phase),
-      goldReserve(other.goldReserve), combatReserve(other.combatReserve) {
-    std::cout << "Constructeur copie Turn" << std::endl;
-}
-
-// 3. Opérateur d'affectation copie
-Turn& Turn::operator=(const Turn& other) {
-    std::cout << "Opérateur affectation copie Turn" << std::endl;
-    
-    if (this != &other) {
-        currentPlayer = other.currentPlayer;
-        phase = other.phase;
-        goldReserve = other.goldReserve;
-        combatReserve = other.combatReserve;
-    }
-    return *this;
-}
-
-// 4. Constructeur de déplacement
-Turn::Turn(Turn&& other) noexcept
-    : currentPlayer(other.currentPlayer), phase(other.phase),
-      goldReserve(other.goldReserve), combatReserve(other.combatReserve) {
-    std::cout << "Constructeur déplacement Turn" << std::endl;
-    
-    // Mettre l'autre objet dans un état valide
-    other.currentPlayer = nullptr;
-    other.phase = Phase::MAIN;
-    other.goldReserve = 0;
-    other.combatReserve = 0;
-}
-
-// 5. Opérateur d'affectation déplacement
-Turn& Turn::operator=(Turn&& other) noexcept {
-    std::cout << "Opérateur affectation déplacement Turn" << std::endl;
-    
-    if (this != &other) {
-        currentPlayer = other.currentPlayer;
-        phase = other.phase;
-        goldReserve = other.goldReserve;
-        combatReserve = other.combatReserve;
-        
-        // Mettre l'autre objet dans un état valide
-        other.currentPlayer = nullptr;
-        other.phase = Phase::MAIN;
-        other.goldReserve = 0;
-        other.combatReserve = 0;
-    }
-    return *this;
-}
+Turn::Turn() : phase(Phase::MAIN), goldReserve(0), combatReserve(0) {}
 
 
 void Turn::nextPhase() {
@@ -81,19 +21,11 @@ void Turn::nextPhase() {
     }
 }
 
-Player& Turn::getCurrentPlayer() const {
-    if (currentPlayer == nullptr) {
-        throw std::runtime_error("Aucun joueur assigné au tour !");
-    }
-    return *currentPlayer;
-}
-
 Phase Turn::getPhase() const {
     return phase;
 }
 
-void Turn::reset(Player& player) {
-    currentPlayer = &player;
+void Turn::reset() {
     phase = Phase::MAIN;
     goldReserve = 0;
     combatReserve = 0;
@@ -107,11 +39,11 @@ void Turn::addCombat(int amount) {
     combatReserve += amount;
 }
 
-int Turn::getGoldReserve() {
+int Turn::getGoldReserve() const {
     return goldReserve;
 }
 
-int Turn::getCombatReserve(){
+int Turn::getCombatReserve() const {
     return combatReserve;
 }
 

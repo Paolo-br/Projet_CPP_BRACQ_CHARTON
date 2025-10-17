@@ -1,5 +1,6 @@
 #include "AllyAbility.h"
 #include "Player.h"
+#include "Turn.h"
 #include <iostream>
 
 AllyAbility::AllyAbility() {
@@ -14,8 +15,18 @@ AllyAbility::~AllyAbility() {
 }
 std::vector<Effect*> AllyAbility::getEffect() const {return m_effs;}
 
-void AllyAbility::trigger(Player& owner, Player& opponent) {
+void AllyAbility::trigger(Player& owner, Turn& turn) {
     std::cout<< "Abilité d'allié déclenchée" << std::endl;
         std::cout << "Joueur : " << owner.getName() << std::endl;
-    std::cout << "Opposant : " << opponent.getName() << std::endl;
+    std::cout << "Or : " << turn.getGoldReserve() << std::endl;
+}
+
+std::string AllyAbility::getName() const{return "AllyAbility";}
+
+AllyAbility* AllyAbility::clone() const {
+    std::vector<Effect*> clonedEffects;
+    for (const auto& effect : m_effs) {
+        clonedEffects.push_back(effect->clone());
+    }
+    return new AllyAbility(clonedEffects);
 }

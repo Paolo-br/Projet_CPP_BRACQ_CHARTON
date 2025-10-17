@@ -2,18 +2,23 @@
 #define __ITEMCARD_H
 #include "Card.h"
 #include "Effect.h"
+#include "Ability.h"
+#include "Utils.h"
 #include <vector>
 
 class ItemCard : public Card {
 private:
     std::string m_type;
     std::vector<Effect*> m_effects;
-    
+    std::vector<Ability*> m_abilities;   // Pour Sacrifice abilities principalement
 
 public:
 
+    void printItemCard();
+    void printItemCard(std::vector<ItemCard*>& cards);
     ItemCard(const std::string& name, int cost, Faction faction, const std::string& type,
-                   const std::vector<Effect*>& effects);
+                   const std::vector<Effect*>& effects,
+                   const std::vector<Ability*>& abilities = {});
 
 
     // RÈGLE DES 5 - OBLIGATOIRE à cause des raw pointers
@@ -27,11 +32,17 @@ public:
 
     // Implémentation des méthodes virtuelles pures
     std::string getType() const override { return m_type; }
-    std::string getName() override;
+    std::string getName() const override;
     void executeEffects(Player& player, Turn& turn) override;
 
     // Autres méthodes
     std::vector<Effect*> getEffects() const { return m_effects; }
+    std::vector<Ability*> getAbilities() const { return m_abilities; }
     void play(Player& owner, Player& opponent) override;
+    
+    // Vérification des abilities
+    bool hasAllyAbility() const override;
+    bool hasSacrificeAbility() const override;
 };
 #endif
+

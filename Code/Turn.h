@@ -1,38 +1,35 @@
 #ifndef TURN_H
 #define TURN_H
 
-#include "Player.h"
 #include "Phase.h"
 
 class Turn {
 private:
-    Player* currentPlayer; // pointeur pour éviter les copies lourdes
     Phase phase;
     int goldReserve;
     int combatReserve;
 
 public:
     Turn(); 
-    Turn(Player& player);
 
-    // RÈGLE DES 5 - À cause du pointeur raw
-    ~Turn();
-    Turn(const Turn& other);                    // Constructeur copie
-    Turn& operator=(const Turn& other);         // Opérateur affectation copie
-    Turn(Turn&& other) noexcept;                // Constructeur déplacement  
-    Turn& operator=(Turn&& other) noexcept;     // Opérateur affectation déplacement
+    // Règle des 0/3/5 : Pas de gestion de ressources dynamiques
+    // Utilisation des versions par défaut du compilateur
+    ~Turn() = default;
+    Turn(const Turn& other) = default;
+    Turn& operator=(const Turn& other) = default;
+    Turn(Turn&& other) noexcept = default;
+    Turn& operator=(Turn&& other) noexcept = default;
 
     void nextPhase();
-    Player& getCurrentPlayer() const;
     Phase getPhase() const;
 
-    void reset(Player& player); // pour changer de joueur au prochain tour
+    void reset(); // Reset pour un nouveau tour
 
     // Gestion des réserves
     void addGold(int amount);
     void addCombat(int amount);
-    int getGoldReserve();
-    int getCombatReserve();
+    int getGoldReserve() const;
+    int getCombatReserve() const;
     void spendGold(int amount);
     void spendCombat(int amount);
     void clearReserves();

@@ -1,10 +1,13 @@
 #ifndef __CHAMPIONCARD_H
 #define __CHAMPIONCARD_H
 #include <string>
-#include <list>
+#include <vector>
 #include "Faction.h"
 #include "Card.h"
+#include "Effect.h"
 #include "PrimaryAbility.h"
+#include "Utils.h"
+
 
 class Player;
 
@@ -13,12 +16,13 @@ class ChampionCard : public Card{
     bool m_isGuard;
     bool m_isTapped; // true = démobilisé, false = mobilisé
     int m_currentDamage;  // Dégâts reçus ce tour
-    std::list<Ability*> m_abilities;
+    std::vector<Ability*> m_abilities;
 
 
     public:
+    void printChampionCard();
 
-    ChampionCard(std::string name, int cost, Faction faction, std::string type, int defense, bool isGuard, bool isTapped, std::list<Ability*> abilities);
+    ChampionCard(const std::string name, int cost, Faction faction, const std::string type, int defense, bool isGuard, bool isTapped, std::vector<Ability*> abilities);
     
     // RÈGLE DES 5 - OBLIGATOIRE
     ~ChampionCard() override;
@@ -36,11 +40,11 @@ class ChampionCard : public Card{
     bool getIsTapped();
     bool isGuard() const;       // Vérifie si c'est un Garde
     bool isReady() const;       // Vérifie si le champion est mobilisé
-    std::list<Ability*> getAbilities();
+    std::vector<Ability*> getAbilities();
     void setDefense(int defense);
     void setIsGuard(bool isGuard);
     void setIsTapped(bool isTapped);
-    void setAbilities(std::list<Ability*> abilities);
+    void setAbilities(std::vector<Ability*> abilities);
     void setReady(bool ready);  // Mobilise/démobilise le champion
     
     std::string getType() const override { return "Champion"; }
