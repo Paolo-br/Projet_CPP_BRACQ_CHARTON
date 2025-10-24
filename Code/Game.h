@@ -82,6 +82,11 @@ public:
     void activateAbilitiesPhase();
     void acquireCardsPhase();
     void combatPhase();
+    void viewDiscardPile();
+    
+    // Gestion des capacités Alliées
+    void triggerAllyAbilities(Faction faction);
+    void checkAndTriggerAllyAbilities();
     
     // Validation des actions
     bool canAttackPlayer(const Player& target) const;

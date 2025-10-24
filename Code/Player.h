@@ -80,7 +80,7 @@ public:
     
 
     void addCardToPlayArea(Card* card); 
-    void acquireCard(Card* card);
+    void acquireCard(Card* card, Turn& turn);
 
     // Gestion des dégâts des champions
     void resetChampionDamage(); // Reset tous les dégâts en fin de tour

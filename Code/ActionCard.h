@@ -15,7 +15,7 @@ public:
                const std::vector<Effect*>& effects,
                const std::vector<Ability*>& abilities = {});
 
-    // RÈGLE DES 5 OBLIGATOIRE à cause des raw pointers
+    // RÈGLE DES 5 
     ~ActionCard() override;
     ActionCard(const ActionCard& other);
     ActionCard& operator=(const ActionCard& other);

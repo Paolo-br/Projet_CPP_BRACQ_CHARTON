@@ -81,7 +81,7 @@ void testChampions() {
     abilities_arkus.push_back(new ActivateAbility(activateEffs_arkus));
     abilities_arkus.push_back(new AllyAbility(allyEffs_arkus));
     
-    ChampionCard arkus("Arkus, Imperial Dragon", 8, Faction::Imperial, "Champion", 6, true, false, abilities_arkus);
+    ChampionCard arkus("Arkus, Imperial Dragon", 8, Faction::Imperial, "Champion", 6, true, abilities_arkus);
     
     cout << "✓ Arkus créé: " << arkus.getName() << endl;
     cout << "  - Faction: Imperial" << endl;
@@ -99,7 +99,7 @@ void testChampions() {
     std::vector<Ability*> abilities_darian;
     abilities_darian.push_back(new ActivateAbility(activateEffs_darian));
     
-    ChampionCard darian("Darian, War Mage", 4, Faction::Imperial, "Champion", 5, false, false, abilities_darian);
+    ChampionCard darian("Darian, War Mage", 4, Faction::Imperial, "Champion", 5, false, abilities_darian);
     
     cout << "✓ Darian créé avec ChoiceEffect" << endl;
 }

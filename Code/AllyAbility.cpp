@@ -17,8 +17,13 @@ std::vector<Effect*> AllyAbility::getEffect() const {return m_effs;}
 
 void AllyAbility::trigger(Player& owner, Turn& turn) {
     std::cout<< "Abilité d'allié déclenchée" << std::endl;
-        std::cout << "Joueur : " << owner.getName() << std::endl;
-    std::cout << "Or : " << turn.getGoldReserve() << std::endl;
+    
+    // Appliquer tous les effets de cette capacité
+    for (auto& effect : m_effs) {
+        if (effect) {
+            effect->apply(owner, turn);
+        }
+    }
 }
 
 std::string AllyAbility::getName() const{return "AllyAbility";}

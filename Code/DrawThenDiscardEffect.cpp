@@ -61,7 +61,7 @@ void DrawThenDiscardEffect::apply(Player& player, Turn& turn) {
             std::cout << "Carte \"" << card->getName() << "\" défaussée." << std::endl;
         } else {
             std::cout << "Index invalide !" << std::endl;
-            --i; // Retry
+            --i; 
         }
     }
 }

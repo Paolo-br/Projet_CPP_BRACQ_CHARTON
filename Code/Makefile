@@ -4,14 +4,27 @@ CXXFLAGS=-Wall -Wextra -Werror -std=c++11
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $< -c -o $@
 
-test: test.o Player.o Deck.o Card.o ChampionCard.o Ability.o SacrificeAbility.o Hand.o InPlayArea.o DiscardPile.o Market.o AllyAbility.o ActivateAbility.o Faction.o Game.o GameSettings.o PrimaryAbility.o Turn.o \
-      ActionCard.o ItemCard.o Effect.o GoldEffect.o AttackEffect.o HealEffect.o DrawEffect.o SacrificeEffect.o PrepareChampionEffect.o StunChampionEffect.o DiscardOpponentEffect.o ConditionalEffect.o ChoiceEffect.o DrawThenDiscardEffect.o Utils.o
+# Compilation de la partie principale
+main: main.o Player.o Deck.o Card.o ChampionCard.o Ability.o SacrificeAbility.o Hand.o InPlayArea.o DiscardPile.o Market.o AllyAbility.o ActivateAbility.o Faction.o Game.o GameSettings.o PrimaryAbility.o Turn.o \
+      ActionCard.o ItemCard.o Effect.o GoldEffect.o AttackEffect.o HealEffect.o DrawEffect.o SacrificeEffect.o PrepareChampionEffect.o StunChampionEffect.o DiscardOpponentEffect.o ConditionalEffect.o ChoiceEffect.o DrawThenDiscardEffect.o \
+      PutNextCardOnTopEffect.o PutNextCardInHandEffect.o PutFromDiscardOnTopEffect.o Utils.o
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
-.PHONY: run clean
+# Compilation des tests
+test: test.o Player.o Deck.o Card.o ChampionCard.o Ability.o SacrificeAbility.o Hand.o InPlayArea.o DiscardPile.o Market.o AllyAbility.o ActivateAbility.o Faction.o Game.o GameSettings.o PrimaryAbility.o Turn.o \
+      ActionCard.o ItemCard.o Effect.o GoldEffect.o AttackEffect.o HealEffect.o DrawEffect.o SacrificeEffect.o PrepareChampionEffect.o StunChampionEffect.o DiscardOpponentEffect.o ConditionalEffect.o ChoiceEffect.o DrawThenDiscardEffect.o \
+      PutNextCardOnTopEffect.o PutNextCardInHandEffect.o PutFromDiscardOnTopEffect.o Utils.o
+	$(CXX) $(CXXFLAGS) $^ -o $@
 
-run: test
+.PHONY: run run-test clean
+
+# Lancer une partie
+run: main
+	./main
+
+# Lancer les tests
+run-test: test
 	./test
 
 clean:
-	rm -f *.o *~ *.core test
+	rm -f *.o *~ *.core test main

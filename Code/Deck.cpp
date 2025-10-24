@@ -19,8 +19,6 @@ void Deck::shuffle() {
         std::cout << "Avertissement: tentative de mélanger un deck vide" << std::endl;
         return;
     }
-
-    // Shuffle the vector of Card pointers directly
     std::random_device rd;
     std::mt19937 g(rd());
     std::shuffle(m_cards.begin(), m_cards.end(), g);
@@ -38,7 +36,7 @@ Card* Deck::draw() {
     }
     
     Card* topCard = m_cards.front();
-    m_cards.erase(m_cards.begin());  // Fixed: actually remove the card
+    m_cards.erase(m_cards.begin()); 
     
     std::cout << "Carte piochée: " << topCard->getName() 
               << " (reste " << m_cards.size() << " cartes)" << std::endl;
@@ -48,6 +46,11 @@ Card* Deck::draw() {
 
 void Deck::addCard(Card* card) {
     m_cards.push_back(card);
+}
+
+void Deck::addCardOnTop(Card* card) {
+    m_cards.insert(m_cards.begin(), card); // Insère au début (dessus du deck)
+    std::cout << "Carte ajoutée sur le dessus du deck: " << card->getName() << std::endl;
 }
 
 bool Deck::isEmpty() const {
@@ -65,7 +68,7 @@ void Deck::clear() {
 
 bool Deck::removeCard(Card* card) {
     for (auto it = m_cards.begin(); it != m_cards.end(); ++it) {
-        if (*it == card) {  // Compare pointers directly, not names
+        if (*it == card) { 
             m_cards.erase(it);
             std::cout << "Carte retirée du deck: " << card->getName() << std::endl;
             return true;

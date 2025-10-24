@@ -2,12 +2,23 @@
 #define TURN_H
 
 #include "Phase.h"
+#include "Faction.h"
+#include <set>
+
+class Player; 
 
 class Turn {
 private:
     Phase phase;
     int goldReserve;
     int combatReserve;
+    Player* opponent;
+    std::set<Faction> factionsPlayedThisTurn; // Track des factions jouées ce tour
+    
+
+    bool nextCardGoesOnTop;       // La prochaine carte acquise va sur le deck
+    bool nextActionGoesOnTop;     // La prochaine ACTION acquise va sur le deck
+    bool nextCardGoesInHand;      // La prochaine carte acquise va en main
 
 public:
     Turn(); 
@@ -33,6 +44,26 @@ public:
     void spendGold(int amount);
     void spendCombat(int amount);
     void clearReserves();
+    
+    // Gestion de l'adversaire
+    void setOpponent(Player* opp);
+    Player* getOpponent() const;
+    bool hasOpponent() const;
+    
+    // Gestion des factions jouées (pour capacités Alliées)
+    void addFactionPlayed(Faction faction);
+    bool hasFactionBeenPlayed(Faction faction) const;
+    void clearFactionsPlayed();
+    int getFactionCount(Faction faction) const;
+    
+    // Gestion des effets Guild de manipulation du deck
+    void setNextCardGoesOnTop(bool value);
+    void setNextActionGoesOnTop(bool value);
+    void setNextCardGoesInHand(bool value);
+    bool getNextCardGoesOnTop() const;
+    bool getNextActionGoesOnTop() const;
+    bool getNextCardGoesInHand() const;
+    void resetAcquireFlags(); // Reset les flags après acquisition
 };
 
 #endif // TURN_H

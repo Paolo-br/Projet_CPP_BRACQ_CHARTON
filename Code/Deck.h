@@ -26,6 +26,7 @@ class Deck {
     std::vector<Card*> getCards();
     Card* draw();
     void addCard(Card* card); //Est fait lors de l'achat d'une carte
+    void addCardOnTop(Card* card); // Ajoute une carte sur le dessus du deck
     bool isEmpty() const;
     size_t size() const;
     void clear();

@@ -16,6 +16,9 @@
 #include "DiscardOpponentEffect.h"
 #include "ConditionalEffect.h"
 #include "ChoiceEffect.h"
+#include "PutNextCardOnTopEffect.h"
+#include "PutNextCardInHandEffect.h"
+#include "PutFromDiscardOnTopEffect.h"
 #include "Ability.h"
 #include "AllyAbility.h"
 #include "SacrificeAbility.h"
@@ -192,7 +195,7 @@ void Market::initializeBaseSet() {
     abilities_arkus.push_back(new ActivateAbility(activateEffs_arkus));
     abilities_arkus.push_back(new AllyAbility(allyEffs_arkus));
     
-    ChampionCard* arkus = new ChampionCard("Arkus, Imperial Dragon", 8, Faction::Imperial, "Champion", 6, true, false, abilities_arkus);
+    ChampionCard* arkus = new ChampionCard("Arkus, Imperial Dragon", 8, Faction::Imperial, "Champion", 6, true,abilities_arkus);
     m_marketDeck.addCard(arkus);
 
     // 2. Close Ranks (Action) - Coût: 3
@@ -237,7 +240,7 @@ void Market::initializeBaseSet() {
     std::vector<Ability*> abilities_darian;
     abilities_darian.push_back(new ActivateAbility(activateEffs_darian));
     
-    ChampionCard* darian = new ChampionCard("Darian, War Mage", 4, Faction::Imperial, "Champion", 5, false, false, abilities_darian);
+    ChampionCard* darian = new ChampionCard("Darian, War Mage", 4, Faction::Imperial, "Champion", 5, false, abilities_darian);
     m_marketDeck.addCard(darian);
 
     // 5. Domination (Action) - Coût: 7
@@ -272,7 +275,7 @@ void Market::initializeBaseSet() {
     abilities_cristov.push_back(new ActivateAbility(activateEffs_cristov));
     abilities_cristov.push_back(new AllyAbility(allyEffs_cristov));
     
-    ChampionCard* cristov = new ChampionCard("Cristov, the Just", 5, Faction::Imperial, "Champion", 5, true, false, abilities_cristov);
+    ChampionCard* cristov = new ChampionCard("Cristov, the Just", 5, Faction::Imperial, "Champion", 5, true,abilities_cristov);
     m_marketDeck.addCard(cristov);
 
     // 7. Kraka, High Priest (Champion) - Coût: 6, Défense: 6
@@ -289,7 +292,7 @@ void Market::initializeBaseSet() {
     abilities_kraka.push_back(new ActivateAbility(activateEffs_kraka));
     abilities_kraka.push_back(new AllyAbility(allyEffs_kraka));
     
-    ChampionCard* kraka = new ChampionCard("Kraka, High Priest", 6, Faction::Imperial, "Champion", 6, false, false, abilities_kraka);
+    ChampionCard* kraka = new ChampionCard("Kraka, High Priest", 6, Faction::Imperial, "Champion", 6, false, abilities_kraka);
     m_marketDeck.addCard(kraka);
 
     // 8. Man-at-Arms (Champion, Guard) - Coût: 3, Défense: 4 (×2)
@@ -302,7 +305,7 @@ void Market::initializeBaseSet() {
         std::vector<Ability*> abilities_man;
         abilities_man.push_back(new ActivateAbility(activateEffs_man));
         
-        ChampionCard* man = new ChampionCard("Man-at-Arms", 3, Faction::Imperial, "Champion", 4, true, false, abilities_man);
+        ChampionCard* man = new ChampionCard("Man-at-Arms", 3, Faction::Imperial, "Champion", 4, true, abilities_man);
         m_marketDeck.addCard(man);
     }
 
@@ -315,7 +318,7 @@ void Market::initializeBaseSet() {
     std::vector<Ability*> abilities_weyan;
     abilities_weyan.push_back(new ActivateAbility(activateEffs_weyan));
     
-    ChampionCard* masterWeyan = new ChampionCard("Master Weyan", 4, Faction::Imperial, "Champion", 4, true, false, abilities_weyan);
+    ChampionCard* masterWeyan = new ChampionCard("Master Weyan", 4, Faction::Imperial, "Champion", 4, true, abilities_weyan);
     m_marketDeck.addCard(masterWeyan);
 
     // 10. Rally the Troops (Action) - Coût: 4
@@ -367,7 +370,7 @@ void Market::initializeBaseSet() {
         std::vector<Ability*> abilities_tithe;
         abilities_tithe.push_back(new ActivateAbility(activateEffs_tithe));
         
-        ChampionCard* tithe = new ChampionCard("Tithe Priest", 2, Faction::Imperial, "Champion", 3, false, false, abilities_tithe);
+        ChampionCard* tithe = new ChampionCard("Tithe Priest", 2, Faction::Imperial, "Champion", 3, false, abilities_tithe);
         m_marketDeck.addCard(tithe);
     }
 
@@ -422,7 +425,7 @@ void Market::initializeBaseSet() {
     std::vector<Ability*> abilities_borg;
     abilities_borg.push_back(new ActivateAbility(activateEffs_borg));
     
-    ChampionCard* borg = new ChampionCard("Borg, Ogre Mercenary", 6, Faction::Guilde, "Champion", 6, true, false, abilities_borg);
+    ChampionCard* borg = new ChampionCard("Borg, Ogre Mercenary", 6, Faction::Guilde, "Champion", 6, true, abilities_borg);
     m_marketDeck.addCard(borg);
 
     // 2. Bribe (Action) - Coût: 3 (×3)
@@ -433,12 +436,7 @@ void Market::initializeBaseSet() {
         primaryEffs_bribe.push_back(new GoldEffect(3));
         
         std::vector<Effect*> allyEffs_bribe;
-        // TODO COMPLEXE: Nécessite PutNextCardOnTopEffect(CardType::ACTION)
-        // Cet effet doit modifier l'état du Turn pour que le prochain achat d'Action 
-        // aille sur le deck au lieu de la défausse. Requiert:
-        // 1. Nouvelle classe PutNextCardOnTopEffect avec cardType filter
-        // 2. Modification de Turn pour tracker "nextCardGoesOnTop" flag
-        // 3. Modification de Market::buyCard() pour vérifier ce flag
+        allyEffs_bribe.push_back(new PutNextCardOnTopEffect("Action")); // Filter pour Actions seulement
         
         std::vector<Ability*> abilities_bribe;
         abilities_bribe.push_back(new PrimaryAbility(primaryEffs_bribe));
@@ -473,12 +471,7 @@ void Market::initializeBaseSet() {
     primaryEffs_deception.push_back(new DrawEffect(1));
     
     std::vector<Effect*> allyEffs_deception;
-    // TODO COMPLEXE: Nécessite PutNextCardInHandEffect()
-    // Cet effet doit modifier l'état du Turn pour que le prochain achat 
-    // aille directement en main au lieu de la défausse. Requiert:
-    // 1. Nouvelle classe PutNextCardInHandEffect
-    // 2. Modification de Turn pour tracker "nextCardGoesInHand" flag
-    // 3. Modification de Market::buyCard() pour vérifier ce flag
+    allyEffs_deception.push_back(new PutNextCardInHandEffect());
     
     std::vector<Ability*> abilities_deception;
     abilities_deception.push_back(new PrimaryAbility(primaryEffs_deception));
@@ -552,7 +545,7 @@ void Market::initializeBaseSet() {
     abilities_myros.push_back(new ActivateAbility(activateEffs_myros));
     abilities_myros.push_back(new AllyAbility(allyEffs_myros));
     
-    ChampionCard* myros = new ChampionCard("Myros, Guild Mage", 5, Faction::Guilde, "Champion", 3, true, false, abilities_myros);
+    ChampionCard* myros = new ChampionCard("Myros, Guild Mage", 5, Faction::Guilde, "Champion", 3, true, abilities_myros);
     m_marketDeck.addCard(myros);
 
     // 9. Parov, the Enforcer (Champion, Guard) - Coût: 5, Défense: 5
@@ -568,7 +561,7 @@ void Market::initializeBaseSet() {
     abilities_parov.push_back(new ActivateAbility(activateEffs_parov));
     abilities_parov.push_back(new AllyAbility(allyEffs_parov));
     
-    ChampionCard* parov = new ChampionCard("Parov, the Enforcer", 5, Faction::Guilde, "Champion", 5, true, false, abilities_parov);
+    ChampionCard* parov = new ChampionCard("Parov, the Enforcer", 5, Faction::Guilde, "Champion", 5, true, abilities_parov);
     m_marketDeck.addCard(parov);
 
     // 10. Profit (Action) - Coût: 1 (×3)
@@ -598,7 +591,7 @@ void Market::initializeBaseSet() {
     std::vector<Ability*> abilities_rake;
     abilities_rake.push_back(new ActivateAbility(activateEffs_rake));
     
-    ChampionCard* rake = new ChampionCard("Rake, Master Assassin", 7, Faction::Guilde, "Champion", 7, false, false, abilities_rake);
+    ChampionCard* rake = new ChampionCard("Rake, Master Assassin", 7, Faction::Guilde, "Champion", 7, false, abilities_rake);
     m_marketDeck.addCard(rake);
 
     // 12. Rasmus, the Smuggler (Champion) - Coût: 4, Défense: 5
@@ -608,14 +601,13 @@ void Market::initializeBaseSet() {
     activateEffs_rasmus.push_back(new GoldEffect(2));
     
     std::vector<Effect*> allyEffs_rasmus;
-    // TODO COMPLEXE: Nécessite PutNextCardOnTopEffect() (sans filtre de type)
-    // Identique à Bribe mais sans restriction de type de carte
+    allyEffs_rasmus.push_back(new PutNextCardOnTopEffect("Any")); // Toutes les cartes
     
     std::vector<Ability*> abilities_rasmus;
     abilities_rasmus.push_back(new ActivateAbility(activateEffs_rasmus));
     abilities_rasmus.push_back(new AllyAbility(allyEffs_rasmus));
     
-    ChampionCard* rasmus = new ChampionCard("Rasmus, the Smuggler", 4, Faction::Guilde, "Champion", 5, false, false, abilities_rasmus);
+    ChampionCard* rasmus = new ChampionCard("Rasmus, the Smuggler", 4, Faction::Guilde, "Champion", 5, false, abilities_rasmus);
     m_marketDeck.addCard(rasmus);
 
     // 13. Smash and Grab (Action) - Coût: 6
@@ -623,13 +615,7 @@ void Market::initializeBaseSet() {
     // You may put a card from your discard pile on top of your deck
     std::vector<Effect*> primaryEffs_smash;
     primaryEffs_smash.push_back(new AttackEffect(6));
-    // TODO COMPLEXE: Nécessite PutFromDiscardOnTopEffect()
-    // Cet effet doit permettre de:
-    // 1. Afficher les cartes de la défausse
-    // 2. Laisser le joueur choisir une carte (optionnel)
-    // 3. Retirer la carte de la défausse
-    // 4. La placer sur le dessus du deck
-    // Requiert: Nouvelle classe PutFromDiscardOnTopEffect(optional=true)
+    primaryEffs_smash.push_back(new PutFromDiscardOnTopEffect(true)); // Optional = true
     
     std::vector<Ability*> abilities_smash;
     abilities_smash.push_back(new PrimaryAbility(primaryEffs_smash));
@@ -649,7 +635,7 @@ void Market::initializeBaseSet() {
         std::vector<Ability*> abilities_streetThug;
         abilities_streetThug.push_back(new ActivateAbility(activateEffs_streetThug));
         
-        ChampionCard* streetThug = new ChampionCard("Street Thug", 3, Faction::Guilde, "Champion", 4, false, false, abilities_streetThug);
+        ChampionCard* streetThug = new ChampionCard("Street Thug", 3, Faction::Guilde, "Champion", 4, false, abilities_streetThug);
         m_marketDeck.addCard(streetThug);
     }
 
@@ -674,7 +660,7 @@ void Market::initializeBaseSet() {
         abilities_cultPriest.push_back(new ActivateAbility(activateEffs_cultPriest));
         abilities_cultPriest.push_back(new AllyAbility(allyEffs_cultPriest));
         
-        ChampionCard* cultPriest = new ChampionCard("Cult Priest", 3, Faction::Necros, "Champion", 4, false, false, abilities_cultPriest);
+        ChampionCard* cultPriest = new ChampionCard("Cult Priest", 3, Faction::Necros, "Champion", 4, false, abilities_cultPriest);
         m_marketDeck.addCard(cultPriest);
     }
 
@@ -726,7 +712,7 @@ void Market::initializeBaseSet() {
         std::vector<Ability*> abilities_deathCultist;
         abilities_deathCultist.push_back(new ActivateAbility(activateEffs_deathCultist));
         
-        ChampionCard* deathCultist = new ChampionCard("Death Cultist", 2, Faction::Necros, "Champion", 3, true, false, abilities_deathCultist);
+        ChampionCard* deathCultist = new ChampionCard("Death Cultist", 2, Faction::Necros, "Champion", 3, true, abilities_deathCultist);
         m_marketDeck.addCard(deathCultist);
     }
 
@@ -763,7 +749,7 @@ void Market::initializeBaseSet() {
     abilities_rayla.push_back(new ActivateAbility(activateEffs_rayla));
     abilities_rayla.push_back(new AllyAbility(allyEffs_rayla));
     
-    ChampionCard* rayla = new ChampionCard("Rayla, Endweaver", 4, Faction::Necros, "Champion", 4, false, false, abilities_rayla);
+    ChampionCard* rayla = new ChampionCard("Rayla, Endweaver", 4, Faction::Necros, "Champion", 4, false, abilities_rayla);
     m_marketDeck.addCard(rayla);
 
     // 7. Influence (Action) - Coût: 2 (×3)
@@ -795,7 +781,7 @@ void Market::initializeBaseSet() {
     std::vector<Ability*> abilities_krythos;
     abilities_krythos.push_back(new ActivateAbility(activateEffs_krythos));
     
-    ChampionCard* krythos = new ChampionCard("Krythos, Master Vampire", 7, Faction::Necros, "Champion", 6, false, false, abilities_krythos);
+    ChampionCard* krythos = new ChampionCard("Krythos, Master Vampire", 7, Faction::Necros, "Champion", 6, false, abilities_krythos);
     m_marketDeck.addCard(krythos);
 
     // 9. Life Drain (Action) - Coût: 6
@@ -826,7 +812,7 @@ void Market::initializeBaseSet() {
     std::vector<Ability*> abilities_lys;
     abilities_lys.push_back(new ActivateAbility(activateEffs_lys));
     
-    ChampionCard* lys = new ChampionCard("Lys, the Unseen", 6, Faction::Necros, "Champion", 5, true, false, abilities_lys);
+    ChampionCard* lys = new ChampionCard("Lys, the Unseen", 6, Faction::Necros, "Champion", 5, true, abilities_lys);
     m_marketDeck.addCard(lys);
 
     // 11. The Rot (Action) - Coût: 3 (×2)
@@ -865,7 +851,7 @@ void Market::initializeBaseSet() {
     abilities_tyrannor.push_back(new ActivateAbility(activateEffs_tyrannor));
     abilities_tyrannor.push_back(new AllyAbility(allyEffs_tyrannor));
     
-    ChampionCard* tyrannor = new ChampionCard("Tyrannor, the Devourer", 8, Faction::Necros, "Champion", 6, true, false, abilities_tyrannor);
+    ChampionCard* tyrannor = new ChampionCard("Tyrannor, the Devourer", 8, Faction::Necros, "Champion", 6, true, abilities_tyrannor);
     m_marketDeck.addCard(tyrannor);
 
     // 13. Varrick, the Necromancer (Champion) - Coût: 5, Défense: 3
@@ -888,7 +874,7 @@ void Market::initializeBaseSet() {
     abilities_varrick.push_back(new ActivateAbility(activateEffs_varrick));
     abilities_varrick.push_back(new AllyAbility(allyEffs_varrick));
     
-    ChampionCard* varrick = new ChampionCard("Varrick, the Necromancer", 5, Faction::Necros, "Champion", 3, false, false, abilities_varrick);
+    ChampionCard* varrick = new ChampionCard("Varrick, the Necromancer", 5, Faction::Necros, "Champion", 3, false, abilities_varrick);
     m_marketDeck.addCard(varrick);
 
     // —————————————————————
@@ -908,7 +894,7 @@ void Market::initializeBaseSet() {
     abilities_broelyn.push_back(new ActivateAbility(activateEffs_broelyn));
     abilities_broelyn.push_back(new AllyAbility(allyEffs_broelyn));
     
-    ChampionCard* broelyn = new ChampionCard("Broelyn, Loreweaver", 4, Faction::Sauvage, "Champion", 6, false, false, abilities_broelyn);
+    ChampionCard* broelyn = new ChampionCard("Broelyn, Loreweaver", 4, Faction::Sauvage, "Champion", 6, false, abilities_broelyn);
     m_marketDeck.addCard(broelyn);
 
     // 2. Cron, the Berserker (Champion) - Coût: 6, Défense: 6
@@ -924,7 +910,7 @@ void Market::initializeBaseSet() {
     abilities_cron.push_back(new ActivateAbility(activateEffs_cron));
     abilities_cron.push_back(new AllyAbility(allyEffs_cron));
     
-    ChampionCard* cron = new ChampionCard("Cron, the Berserker", 6, Faction::Sauvage, "Champion", 6, false, false, abilities_cron);
+    ChampionCard* cron = new ChampionCard("Cron, the Berserker", 6, Faction::Sauvage, "Champion", 6, false, abilities_cron);
     m_marketDeck.addCard(cron);
 
     // 3. Dire Wolf (Champion, Guard) - Coût: 5, Défense: 5
@@ -940,7 +926,7 @@ void Market::initializeBaseSet() {
     abilities_direWolf.push_back(new ActivateAbility(activateEffs_direWolf));
     abilities_direWolf.push_back(new AllyAbility(allyEffs_direWolf));
     
-    ChampionCard* direWolf = new ChampionCard("Dire Wolf", 5, Faction::Sauvage, "Champion", 5, true, false, abilities_direWolf);
+    ChampionCard* direWolf = new ChampionCard("Dire Wolf", 5, Faction::Sauvage, "Champion", 5, true, abilities_direWolf);
     m_marketDeck.addCard(direWolf);
 
     // 4. Elven Curse (Action) - Coût: 3 (×2)
@@ -997,7 +983,7 @@ void Market::initializeBaseSet() {
     abilities_grak.push_back(new ActivateAbility(activateEffs_grak));
     abilities_grak.push_back(new AllyAbility(allyEffs_grak));
     
-    ChampionCard* grak = new ChampionCard("Grak, Storm Giant", 8, Faction::Sauvage, "Champion", 7, true, false, abilities_grak);
+    ChampionCard* grak = new ChampionCard("Grak, Storm Giant", 8, Faction::Sauvage, "Champion", 7, true, abilities_grak);
     m_marketDeck.addCard(grak);
 
     // 7. Nature's Bounty (Action) - Coût: 4
@@ -1035,7 +1021,7 @@ void Market::initializeBaseSet() {
         abilities_orcGrunt.push_back(new ActivateAbility(activateEffs_orcGrunt));
         abilities_orcGrunt.push_back(new AllyAbility(allyEffs_orcGrunt));
         
-        ChampionCard* orcGrunt = new ChampionCard("Orc Grunt", 3, Faction::Sauvage, "Champion", 3, true, false, abilities_orcGrunt);
+        ChampionCard* orcGrunt = new ChampionCard("Orc Grunt", 3, Faction::Sauvage, "Champion", 3, true, abilities_orcGrunt);
         m_marketDeck.addCard(orcGrunt);
     }
 
@@ -1061,7 +1047,7 @@ void Market::initializeBaseSet() {
     std::vector<Ability*> abilities_torgen;
     abilities_torgen.push_back(new ActivateAbility(activateEffs_torgen));
     
-    ChampionCard* torgen = new ChampionCard("Torgen Rocksplitter", 7, Faction::Sauvage, "Champion", 7, true, false, abilities_torgen);
+    ChampionCard* torgen = new ChampionCard("Torgen Rocksplitter", 7, Faction::Sauvage, "Champion", 7, true, abilities_torgen);
     m_marketDeck.addCard(torgen);
 
     // 11. Spark (Action) - Coût: 1 (×3)
@@ -1111,7 +1097,7 @@ void Market::initializeBaseSet() {
         std::vector<Ability*> abilities_wolfShaman;
         abilities_wolfShaman.push_back(new ActivateAbility(activateEffs_wolfShaman));
         
-        ChampionCard* wolfShaman = new ChampionCard("Wolf Shaman", 2, Faction::Sauvage, "Champion", 4, false, false, abilities_wolfShaman);
+        ChampionCard* wolfShaman = new ChampionCard("Wolf Shaman", 2, Faction::Sauvage, "Champion", 4, false, abilities_wolfShaman);
         m_marketDeck.addCard(wolfShaman);
     }
 

@@ -15,8 +15,13 @@ PrimaryAbility::~PrimaryAbility() {
 }
 void PrimaryAbility::trigger(Player& owner, Turn& turn) {
     std::cout<< "Abilité primaire déclenchée" << std::endl;
-    std::cout << "Joueur : " << owner.getName() << std::endl;
-    std::cout << "Or : " << turn.getGoldReserve() << std::endl;
+    
+    // Appliquer tous les effets de cette capacité
+    for (auto& effect : m_effs) {
+        if (effect) {
+            effect->apply(owner, turn);
+        }
+    }
 }
 
 std::string PrimaryAbility::getName() const {return "PrimaryAbility";}

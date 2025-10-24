@@ -83,32 +83,31 @@ Player& Player::operator=(Player&& other) noexcept {
 void Player::initializeStarterDeck() {
     m_deck.clear();
     
-    
     // Ajouter 7 cartes Or au deck
-for (int i = 0; i < 7; ++i) {
+    for (int i = 0; i < 7; ++i) {
         std::vector<Effect*> effects;
         effects.push_back(new GoldEffect(1)); // Effet : ajouter 1 Or
-        ItemCard gold("Or", 0, Faction::None, "Item", effects);
-        m_deck.addCard(&gold);
+        ItemCard* gold = new ItemCard("Or", 0, Faction::None, "Item", effects);
+        m_deck.addCard(gold);
     }
     
     // 1 Épée Courte (valeur de Combat = 2, coût = 0)
     std::vector<Effect*> swordEffects;
     swordEffects.push_back(new AttackEffect(2)); // Effet : ajouter 2 Combat
-    ItemCard shortsword("Épée Courte", 0, Faction::None, "Item", swordEffects);
-    m_deck.addCard(&shortsword);
+    ItemCard* shortsword = new ItemCard("Épée Courte", 0, Faction::None, "Item", swordEffects);
+    m_deck.addCard(shortsword);
 
     // 1 Dague (valeur de Combat = 1, coût = 0)
     std::vector<Effect*> daggerEffects;
     daggerEffects.push_back(new AttackEffect(1)); // Effet : ajouter 1 Combat
-    ItemCard dagger("Dague", 0, Faction::None, "Item", daggerEffects);
-    m_deck.addCard(&dagger);
+    ItemCard* dagger = new ItemCard("Dague", 0, Faction::None, "Item", daggerEffects);
+    m_deck.addCard(dagger);
 
     // 1 Rubis (valeur de Santé = 2, coût = 0)
     std::vector<Effect*> rubyEffects;
-    rubyEffects.push_back(new AttackEffect(2)); // Effet : ajouter 2 Santé
-    ItemCard ruby("Rubis", 0, Faction::None, "Item", rubyEffects);
-    m_deck.addCard(&ruby);
+    rubyEffects.push_back(new HealEffect(2)); // Effet : ajouter 2 Santé (corrigé de AttackEffect)
+    ItemCard* ruby = new ItemCard("Rubis", 0, Faction::None, "Item", rubyEffects);
+    m_deck.addCard(ruby);
 
     m_deck.shuffle();
     std::cout << m_name << ": deck de départ initialisé (10 cartes)" << std::endl;
@@ -129,8 +128,37 @@ void Player::discardHand() {
     }
 }
 
-void Player::acquireCard(Card* card) {
-    // Ajouter la carte à la défausse
+void Player::acquireCard(Card* card, Turn& turn) {
+    // Vérifier les flags Guild de manipulation du deck
+    bool goesToHand = turn.getNextCardGoesInHand();
+    bool goesToTop = turn.getNextCardGoesOnTop();
+    bool actionGoesToTop = turn.getNextActionGoesOnTop();
+    
+    // Réinitialiser les flags après vérification
+    turn.resetAcquireFlags();
+    
+    // Si l'effet "next card in hand" est actif
+    if (goesToHand) {
+        m_hand.add(card);
+        std::cout << "→ " << m_name << " acquiert " << card->getName() << " et la place DIRECTEMENT EN MAIN!" << std::endl;
+        return;
+    }
+    
+    // Si l'effet "next card on top" est actif
+    if (goesToTop) {
+        m_deck.addCardOnTop(card);
+        std::cout << "→ " << m_name << " acquiert " << card->getName() << " et la place SUR LE DESSUS DU DECK!" << std::endl;
+        return;
+    }
+    
+    // Si l'effet "next action on top" est actif et c'est une Action
+    if (actionGoesToTop && card->getType() == "Action") {
+        m_deck.addCardOnTop(card);
+        std::cout << "→ " << m_name << " acquiert " << card->getName() << " (Action) et la place SUR LE DESSUS DU DECK!" << std::endl;
+        return;
+    }
+    
+    // Comportement normal : ajouter à la défausse
     m_discardPile.add(card);
     std::cout << m_name << " acquiert " << card->getName() << " et l'ajoute à la défausse." << std::endl;
 }
@@ -241,7 +269,7 @@ void Player::stunChampions() {
     for(size_t i = 0; i < champions.size(); i++) {
         it = champions[i];
         if (it.isStunned()) {
-            std::cout << "💥 " << it.getName() << " est assommé !" << std::endl;
+            std::cout << it.getName() << " est assommé !" << std::endl;
             m_discardPile.add(&it);
             champions.erase(champions.begin() + i);
             i--; 
@@ -283,6 +311,27 @@ void Player::displayStatus() const {
               << " | Défausse: " << m_discardPile.size()
               << " | Champions: " << m_playArea.getChampionCount() 
               << " | " << (m_eliminated ? "ÉLIMINÉ" : "En jeu") << std::endl;
+    
+    // Afficher l'état des champions en jeu
+    const std::vector<ChampionCard>& champions = const_cast<InPlayArea&>(m_playArea).getChampions();
+    if (!champions.empty()) {
+        std::cout << "  Champions en jeu:" << std::endl;
+        for (const auto& champion : champions) {
+            std::cout << "    - " << champion.getName() 
+                      << " (Def: " << champion.getRemainingDefense() << "/" << champion.getDefense() << ")";
+            if (champion.isStunned()) {
+                std::cout << " [ASSOMMÉ]";
+            } else if (champion.getIsTapped()) {
+                std::cout << " [DÉMOBILISÉ]";
+            } else {
+                std::cout << " [MOBILISÉ]";
+            }
+            if (champion.isGuard()) {
+                std::cout << " [GARDE]";
+            }
+            std::cout << std::endl;
+        }
+    }
 }
 
 

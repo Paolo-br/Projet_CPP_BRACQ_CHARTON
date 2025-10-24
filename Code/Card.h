@@ -3,9 +3,9 @@
 #include <string>
 #include "Faction.h"
 
-class Turn; // déclaration anticipée
+class Turn;
 
-class Player; // déclaration anticipée
+class Player; 
 
 class Card {
 	std::string m_name;
@@ -15,7 +15,7 @@ class Card {
 
 	public:
 	Card(const std::string name, int cost, Faction faction,const std::string type);
-	virtual ~Card()=default; // Règle des 0 - pas de gestion manuelle
+	virtual ~Card()=default; // Règle des 0
     
 
 
@@ -27,7 +27,7 @@ class Card {
 	virtual void setCost(int cost);
     virtual void setFaction(Faction faction);
     virtual void setType(std::string type);
-    virtual void play(Player& owner, Player& opponent); // à réfléchir si on initialise opponent à null	
+    virtual void play(Player& owner, Player& opponent);
     bool operator==(const Card& other) const;
     
     virtual void executeEffects(Player& player, Turn& turn) = 0;

@@ -3,52 +3,75 @@
 #include "ChampionCard.h"
 #include "Player.h"
 #include "Turn.h"
+#include "ActivateAbility.h"
+#include "AllyAbility.h"
+#include "SacrificeAbility.h"
 
-ChampionCard::ChampionCard(const std::string name, int cost, Faction faction,const std::string type, 
-                           int defense, bool isGuard, bool isTapped, std::vector<Ability*> abilities)
-    : Card(name, cost, faction, type), m_defense(defense), m_isGuard(isGuard), 
-      m_isTapped(isTapped), m_abilities(abilities)
+ChampionCard::ChampionCard(const std::string name, int cost, Faction faction, const std::string type, 
+                           int defense, bool isGuard, std::vector<Ability*> abilities)
+    : Card(name, cost, faction, type), 
+      m_defense(defense), 
+      m_isGuard(isGuard), 
+      m_isTapped(true),  // Les champions entrent en jeu DÉMOBILISÉS (tapped = true)
+      m_currentDamage(0), // Initialiser les dégâts à 0
+      m_abilities(abilities)
 {
     std::cout << "Champion créé: " << name << " (Défense: " << defense 
-         << ", Garde: " << (isGuard ? "Oui" : "Non") 
-         << ", État: " << (isTapped ? "Démobilisé" : "Mobilisé") << ")" << std::endl;
+         << ", Garde: " << (isGuard ? "Oui" : "Non") << ", État: Démobilisé)" << std::endl;
 }
 
 ChampionCard::~ChampionCard() {
-    // Libérez la mémoire des objets Ability
+    // Libération de la mémoire des objets Ability
     for (Ability* ability : m_abilities) {
         delete ability;
     }
-    std::cout << "Champion détruite " <<std::endl;
+    m_abilities.clear();
+    std::cout << "Champion détruit: " << getName() << std::endl;
 }
 
-// CONSTRUCTEUR COPIE
+// CONSTRUCTEUR COPIE - COPIE PROFONDE
 ChampionCard::ChampionCard(const ChampionCard& other)
-    : Card(other), m_defense(other.m_defense), m_isGuard(other.m_isGuard),
-      m_isTapped(other.m_isTapped), m_currentDamage(other.m_currentDamage) {
+    : Card(other), 
+      m_defense(other.m_defense), 
+      m_isGuard(other.m_isGuard),
+      m_isTapped(other.m_isTapped), 
+      m_currentDamage(other.m_currentDamage) {
     
-    // Copie profonde des abilities
-    for (auto ability : other.m_abilities) {
-        m_abilities.push_back(ability);
+    std::cout << "Constructeur copie ChampionCard: " << other.getName() << std::endl;
+    
+    // Copie profonde des abilities avec clone()
+    for (const auto& ability : other.m_abilities) {
+        if (ability) {
+            m_abilities.push_back(ability->clone());
+        }
     }
 }
 
 // OPÉRATEUR AFFECTATION COPIE
 ChampionCard& ChampionCard::operator=(const ChampionCard& other) {
+    std::cout << "Opérateur affectation copie ChampionCard" << std::endl;
+    
     if (this != &other) {
+        // Appel à l'opérateur d'affectation de la classe de base
         Card::operator=(other);
+        
+        // Nettoyer les abilities existantes
         for (Ability* ability : m_abilities) {
             delete ability;
         }
+        m_abilities.clear();
         
+        // Copier les attributs
         m_defense = other.m_defense;
         m_isGuard = other.m_isGuard;
         m_isTapped = other.m_isTapped;
         m_currentDamage = other.m_currentDamage;
         
-        // Copie profonde
-        for (auto ability : other.m_abilities) {
-            m_abilities.push_back(ability);
+        // Copie profonde des abilities avec clone()
+        for (const auto& ability : other.m_abilities) {
+            if (ability) {
+                m_abilities.push_back(ability->clone());
+            }
         }
     }
     return *this;
@@ -56,70 +79,123 @@ ChampionCard& ChampionCard::operator=(const ChampionCard& other) {
 
 // CONSTRUCTEUR DÉPLACEMENT
 ChampionCard::ChampionCard(ChampionCard&& other) noexcept
-    : Card(std::move(other)), m_defense(other.m_defense), m_isGuard(other.m_isGuard),
-      m_isTapped(other.m_isTapped), m_currentDamage(other.m_currentDamage),
+    : Card(std::move(other)), 
+      m_defense(other.m_defense), 
+      m_isGuard(other.m_isGuard),
+      m_isTapped(other.m_isTapped), 
+      m_currentDamage(other.m_currentDamage),
       m_abilities(std::move(other.m_abilities)) {
     
+    std::cout << "Constructeur déplacement ChampionCard" << std::endl;
     other.m_abilities.clear();
 }
 
 // OPÉRATEUR AFFECTATION DÉPLACEMENT
 ChampionCard& ChampionCard::operator=(ChampionCard&& other) noexcept {
+    std::cout << "Opérateur affectation déplacement ChampionCard" << std::endl;
+    
     if (this != &other) {
+        // Appel à l'opérateur d'affectation déplacement de la classe de base
         Card::operator=(std::move(other));
-        for (Ability* ability : m_abilities) {
-        delete ability;
-    }
         
+        // Nettoyer les abilities existantes
+        for (Ability* ability : m_abilities) {
+            delete ability;
+        }
+        m_abilities.clear();
+        
+        // Transférer les attributs
         m_defense = other.m_defense;
         m_isGuard = other.m_isGuard;
         m_isTapped = other.m_isTapped;
         m_currentDamage = other.m_currentDamage;
         m_abilities = std::move(other.m_abilities);
-                
+        
         other.m_abilities.clear();
-        return *this;
-    
     }
     return *this;
 }
     
+// Exécute les effets lorsque le champion entre en jeu
 void ChampionCard::executeEffects(Player& player, Turn& turn) {
-    std::cout << this->getName()<< " entre en jeu ! Pour le joueur" << player.getName()<<"avec en or :"<<turn.getGoldReserve()<< std::endl;
+    std::cout<< player.getName()<<turn.getCombatReserve()<<std::endl;    
+    // Les champions n'ont généralement pas d'effets immédiats à l'entrée en jeu
+    // Leurs capacités doivent être activées explicitement
+}
+
+// Active la capacité principale du champion (si non démobilisé)
+void ChampionCard::activateAbility(Player& owner, Turn& turn) {
+    if (m_isTapped) {
+        std::cout << getName() << " est démobilisé et ne peut pas être activé !" << std::endl;
+        return;
+    }
     
-    // Si le champion a une capacité qui se déclenche à l'entrée en jeu
-    /**
-    for (auto ability : m_abilities) {
-        if (ability->isEnterPlayAbility()) {
-            ability->execute(player, turn);
+    if (isStunned()) {
+        std::cout << getName() << " est assommé et ne peut pas être activé !" << std::endl;
+        return;
+    }
+    
+    std::cout << getName() << " active sa capacité !" << std::endl;
+    
+    // Chercher et déclencher l'ActivateAbility
+    for (auto& ability : m_abilities) {
+        if (dynamic_cast<ActivateAbility*>(ability)) {
+            ability->trigger(owner, turn);
         }
     }
-        **/
+    
+    // Le champion se démobilise après activation
+    m_isTapped = true;
+    std::cout << getName() << " se démobilise" << std::endl;
 }
 
-
-void ChampionCard::activate() {
-    if (!m_isTapped) {
-        std::cout << this->getName() << " active sa capacité !" << std::endl;
-        m_isTapped = true; // Le champion se démobilise après activation
-    } else {
-        std::cout << this->getName() << " est déjà démobilisé, ne peut pas activer !" << std::endl;
+// Déclenche l'effet Allié
+void ChampionCard::triggerAllyAbility(Player& owner, Turn& turn) {
+    std::cout << getName() << " déclenche son effet Allié !" << std::endl;
+    
+    for (auto& ability : m_abilities) {
+        if (dynamic_cast<AllyAbility*>(ability)) {
+            ability->trigger(owner, turn);
+        }
     }
 }
 
-void ChampionCard::sacrifice() {
-    std::cout << this->getName() << " est sacrifié !" << std::endl;
-    // La carte sera placée dans la Zone de Sacrifice
+// Déclenche l'effet Sacrifice et détruit le champion
+void ChampionCard::triggerSacrificeAbility(Player& owner, Turn& turn) {
+    std::cout << getName() << " est sacrifié pour déclencher sa capacité !" << std::endl;
+    
+    for (auto& ability : m_abilities) {
+        if (dynamic_cast<SacrificeAbility*>(ability)) {
+            ability->trigger(owner, turn);
+        }
+    }
 }
 
-void ChampionCard::defend() {
-    std::cout << this->getName() << " se met en position défensive !" << std::endl;
-    // Logique de défense spécifique si nécessaire
-    // Par exemple, pourrait augmenter temporairement la défense, etc.
+// Sacrifie le champion (sans déclencher l'effet)
+void ChampionCard::sacrifice(Player& owner) {
+    std::cout << getName() << " est sacrifié !" << "Pour le joueur "<<owner.getName()<<std::endl;
+    // La carte sera retirée de la zone de jeu par le Player
 }
 
+
+// Gestion des dégâts
+void ChampionCard::takeDamage(int damage) {
+    m_currentDamage += damage;
+    std::cout << getName() << " subit " << damage << " dégâts";
+    
+    if (isStunned()) {
+        std::cout << " et est assommé ! (Dégâts: " << m_currentDamage 
+                  << "/" << m_defense << ")" << std::endl;
+    } else {
+        std::cout << " (Défense restante: " << getRemainingDefense() 
+                  << "/" << m_defense << ")" << std::endl;
+    }
+}
 
 void ChampionCard::resetDamage() {
+    if (m_currentDamage > 0) {
+        std::cout << getName() << " récupère (dégâts réinitialisés)" << std::endl;
+    }
     m_currentDamage = 0;
 }
 
@@ -127,75 +203,126 @@ bool ChampionCard::isStunned() const {
     return m_currentDamage >= m_defense;
 }
 
-std::vector<Ability*> ChampionCard::getAbilities() {
+// Getters
+std::vector<Ability*> ChampionCard::getAbilities() const {
     return m_abilities;
 }
 
-int ChampionCard::getDefense() {
+int ChampionCard::getDefense() const {
     return m_defense;
 }
 
-bool ChampionCard::getIsGuard() {
+bool ChampionCard::getIsGuard() const {
     return m_isGuard;
 }
 
-bool ChampionCard::getIsTapped() {
+bool ChampionCard::getIsTapped() const {
     return m_isTapped;
 }
 
+// Setters
 void ChampionCard::setDefense(int defense) {
     m_defense = defense;
-    std::cout << this->getName() << ": défense modifiée à " << defense << std::endl;
+    std::cout << getName() << ": défense modifiée à " << defense << std::endl;
 }
 
 void ChampionCard::setIsGuard(bool isGuard) {
     m_isGuard = isGuard;
-    std::cout << this->getName() << ": statut Garde modifié à " << (isGuard ? "Oui" : "Non") << std::endl;
+    std::cout << getName() << ": statut Garde modifié à " 
+              << (isGuard ? "Oui" : "Non") << std::endl;
 }
 
 void ChampionCard::setIsTapped(bool isTapped) {
     m_isTapped = isTapped;
-    std::cout << this->getName() << ": état modifié à " << (isTapped ? "Démobilisé" : "Mobilisé") << std::endl;
+    std::cout << getName() << ": état modifié à " 
+              << (isTapped ? "Démobilisé" : "Mobilisé") << std::endl;
 }
 
 void ChampionCard::setAbilities(std::vector<Ability*> abilities) {
+    // Nettoyer les anciennes abilities
+    for (Ability* ability : m_abilities) {
+        delete ability;
+    }
+    m_abilities.clear();
+    
     m_abilities = abilities;
 }
 
 void ChampionCard::setReady(bool ready) {
     m_isTapped = !ready; // ready = true → mobilisé (non tapped)
-    std::cout << this->getName() << " est maintenant " 
-         << (ready ? "mobilisé" : "démobilisé") << std::endl;
+    std::cout << getName() << " est maintenant " 
+              << (ready ? "mobilisé" : "démobilisé") << std::endl;
 }
 
+// Vérification d'état
 bool ChampionCard::isGuard() const {
     return m_isGuard;
 }
 
 bool ChampionCard::isReady() const {
-    return !m_isTapped; // Ready = non démobilisé
+    return !m_isTapped && !isStunned(); // Ready = mobilisé ET non assommé
 }
 
-void ChampionCard::takeDamage(int damage) {
-    std::cout << this->getName() << " subit " << damage << " dégâts";
-    
-    if (damage >= m_defense) {
-        std::cout << " et est assommé !" << std::endl;
-        // Le champion sera placé dans la défausse
-    } else {
-        std::cout << " (défense restante: " << (m_defense - damage) << ")" << std::endl;
-        // Les dégâts ne sont pas cumulatifs entre les tours
+// Vérification des abilities
+bool ChampionCard::hasActivateAbility() const {
+    for (const auto& ability : m_abilities) {
+        if (dynamic_cast<ActivateAbility*>(ability)) {
+            return true;
+        }
     }
+    return false;
+}
+
+bool ChampionCard::hasAllyAbility() const {
+    for (const auto& ability : m_abilities) {
+        if (dynamic_cast<AllyAbility*>(ability)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool ChampionCard::hasSacrificeAbility() const {
+    for (const auto& ability : m_abilities) {
+        if (dynamic_cast<SacrificeAbility*>(ability)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 
+// Jouer le champion
 void ChampionCard::play(Player& owner, Player& opponent) {
-    std::cout << "Champion joué : " << this->getName() << std::endl;
-    std::cout << "Joueur : " << owner.getName() << std::endl;
-    std::cout << "Opposant : " << opponent.getName() << std::endl;
+    std::cout << "═══════════════════════════════════════════════" << std::endl;
+    std::cout << owner.getName() << " joue le champion: " << getName() << std::endl;
+    std::cout << "═══════════════════════════════════════════════" << std::endl;
     
-    // Le champion entre en jeu mobilisé (ready)
-    setReady(true);
+    // Le champion entre en jeu démobilisé (peut être activé au tour suivant)
+    m_isTapped = false;
+    m_currentDamage = 0;
+    
+    std::cout << "→ " << getName() << " entre en jeu mobilisé !" << "contre le joeur "<<opponent.getName()<<std::endl;
+    
+    // Afficher les caractéristiques
+    std::cout << "   Défense: " << m_defense;
+    if (m_isGuard) {
+        std::cout << " [GARDE]";
+    }
+    std::cout << std::endl;
+    
+    // Afficher les capacités
+    if (hasActivateAbility()) {
+        std::cout << " Capacité d'activation disponible" << std::endl;
+    }
+    if (hasAllyAbility()) {
+        std::cout << " Capacité alliée disponible" << std::endl;
+    }
+    if (hasSacrificeAbility()) {
+        std::cout << "  Capacité de sacrifice disponible" << std::endl;
+    }
+    
+    std::cout << "═══════════════════════════════════════════════" << std::endl;
 }
 
 void ChampionCard::printChampionCard(){

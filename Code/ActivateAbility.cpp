@@ -17,8 +17,13 @@ ActivateAbility::~ActivateAbility() {
 
 void ActivateAbility::trigger(Player& owner, Turn& turn) {
     std::cout<< "Abilité activable déclenchée" << std::endl;
-    std::cout << "Joueur : " << owner.getName() << std::endl;
-    std::cout << "Or : " << turn.getGoldReserve() << std::endl;
+    
+    // Appliquer tous les effets de cette capacité
+    for (auto& effect : m_effs) {
+        if (effect) {
+            effect->apply(owner, turn);
+        }
+    }
 }
 
 std::string ActivateAbility::getName() const{return "ActivateAbility";}

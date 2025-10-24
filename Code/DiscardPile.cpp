@@ -29,6 +29,17 @@ void DiscardPile::clear() {
     std::cout << "Défausse vidée" << std::endl;
 }
 
+bool DiscardPile::removeCard(Card* card) {
+    for (auto it = m_cards.begin(); it != m_cards.end(); ++it) {
+        if (*it == card) {
+            m_cards.erase(it);
+            std::cout << "Carte retirée de la défausse: " << card->getName() << std::endl;
+            return true;
+        }
+    }
+    return false;
+}
+
 Deck DiscardPile::reshuffleIntoDeck() {
     Deck newDeck(m_cards);
     newDeck.shuffle();

@@ -1,7 +1,10 @@
 #include "Turn.h"
 #include <iostream>
 
-Turn::Turn() : phase(Phase::MAIN), goldReserve(0), combatReserve(0) {}
+Turn::Turn() : phase(Phase::MAIN), goldReserve(0), combatReserve(0), opponent(nullptr),
+               nextCardGoesOnTop(false), nextActionGoesOnTop(false), nextCardGoesInHand(false) {
+    factionsPlayedThisTurn.clear();
+}
 
 
 void Turn::nextPhase() {
@@ -29,6 +32,10 @@ void Turn::reset() {
     phase = Phase::MAIN;
     goldReserve = 0;
     combatReserve = 0;
+    factionsPlayedThisTurn.clear();
+    nextCardGoesOnTop = false;
+    nextActionGoesOnTop = false;
+    nextCardGoesInHand = false;
 }
 
 void Turn::addGold(int amount) {
@@ -62,4 +69,66 @@ void Turn::spendCombat(int amount) {
 void Turn::clearReserves() {
     goldReserve = 0;
     combatReserve = 0;
+}
+
+// Gestion de l'adversaire
+void Turn::setOpponent(Player* opp) {
+    opponent = opp;
+}
+
+Player* Turn::getOpponent() const {
+    return opponent;
+}
+
+bool Turn::hasOpponent() const {
+    return opponent != nullptr;
+}
+
+// Gestion des factions jouées (pour capacités Alliées)
+void Turn::addFactionPlayed(Faction faction) {
+    if (faction != Faction::None) {
+        factionsPlayedThisTurn.insert(faction);
+        std::cout << "  → Faction " << factionToString(faction) << " jouée ce tour" << std::endl;
+    }
+}
+
+bool Turn::hasFactionBeenPlayed(Faction faction) const {
+    return factionsPlayedThisTurn.find(faction) != factionsPlayedThisTurn.end();
+}
+
+void Turn::clearFactionsPlayed() {
+    factionsPlayedThisTurn.clear();
+}
+
+int Turn::getFactionCount(Faction faction) const {
+    return factionsPlayedThisTurn.count(faction);
+}// Gestion des effets Guild de manipulation du deck
+void Turn::setNextCardGoesOnTop(bool value) {
+    nextCardGoesOnTop = value;
+}
+
+void Turn::setNextActionGoesOnTop(bool value) {
+    nextActionGoesOnTop = value;
+}
+
+void Turn::setNextCardGoesInHand(bool value) {
+    nextCardGoesInHand = value;
+}
+
+bool Turn::getNextCardGoesOnTop() const {
+    return nextCardGoesOnTop;
+}
+
+bool Turn::getNextActionGoesOnTop() const {
+    return nextActionGoesOnTop;
+}
+
+bool Turn::getNextCardGoesInHand() const {
+    return nextCardGoesInHand;
+}
+
+void Turn::resetAcquireFlags() {
+    nextCardGoesOnTop = false;
+    nextActionGoesOnTop = false;
+    nextCardGoesInHand = false;
 }
