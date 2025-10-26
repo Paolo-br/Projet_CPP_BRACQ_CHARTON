@@ -13,7 +13,7 @@
 Player::Player(const std::string& name, int health, const Deck& deck,
                const Hand& hand, const DiscardPile& discardPile)
     : m_name(name), m_health(health), m_gold(0), m_deck(deck), 
-      m_hand(hand), m_discardPile(discardPile), m_eliminated(false) {}
+      m_hand(hand), m_discardPile(discardPile), m_sacrificeZone(), m_eliminated(false) {}
 
 // 1. Destructeur
 Player::~Player() {
@@ -25,7 +25,7 @@ Player::Player(const Player& other)
     : m_name(other.m_name), m_health(other.m_health), m_gold(other.m_gold),
       m_deck(other.m_deck), m_hand(other.m_hand), 
       m_discardPile(other.m_discardPile), m_playArea(other.m_playArea),
-      m_eliminated(other.m_eliminated) {
+      m_sacrificeZone(other.m_sacrificeZone), m_eliminated(other.m_eliminated) {
     std::cout << "Constructeur copie Player: " << m_name << std::endl;
 }
 
@@ -39,6 +39,7 @@ Player& Player::operator=(const Player& other) {
         m_hand = other.m_hand;
         m_discardPile = other.m_discardPile;
         m_playArea = other.m_playArea;
+        m_sacrificeZone = other.m_sacrificeZone;
         m_eliminated = other.m_eliminated;
     }
     std::cout << "Opérateur affectation copie Player: " << m_name << std::endl;
@@ -50,7 +51,8 @@ Player::Player(Player&& other) noexcept
     : m_name(std::move(other.m_name)), m_health(other.m_health), 
       m_gold(other.m_gold), m_deck(std::move(other.m_deck)),
       m_hand(std::move(other.m_hand)), m_discardPile(std::move(other.m_discardPile)),
-      m_playArea(std::move(other.m_playArea)), m_eliminated(other.m_eliminated) {
+      m_playArea(std::move(other.m_playArea)), m_sacrificeZone(std::move(other.m_sacrificeZone)),
+      m_eliminated(other.m_eliminated) {
     // Mettre l'autre objet dans un état valide
     other.m_health = 0;
     other.m_gold = 0;
@@ -68,6 +70,7 @@ Player& Player::operator=(Player&& other) noexcept {
         m_hand = std::move(other.m_hand);
         m_discardPile = std::move(other.m_discardPile);
         m_playArea = std::move(other.m_playArea);
+        m_sacrificeZone = std::move(other.m_sacrificeZone);
         m_eliminated = other.m_eliminated;
         
         // Mettre l'autre objet dans un état valide
@@ -263,17 +266,18 @@ ChampionCard* Player::findChampionToAttack() {
 
 // Assomme tous les champions qui ont suffisamment de dégâts
 void Player::stunChampions() {
-    std::vector<ChampionCard> champions = m_playArea.getChampions();
-    ChampionCard it = champions[0];
+    std::vector<ChampionCard>& champions = m_playArea.getChampions();
     
-    for(size_t i = 0; i < champions.size(); i++) {
-        it = champions[i];
-        if (it.isStunned()) {
-            std::cout << it.getName() << " est assommé !" << std::endl;
-            m_discardPile.add(&it);
+    for(size_t i = 0; i < champions.size(); ) {
+        ChampionCard& champion = champions[i];
+        if (champion.isStunned()) {
+            std::cout << champion.getName() << " est assommé !" << std::endl;
+            m_discardPile.add(&champion);
             champions.erase(champions.begin() + i);
-            i--; 
-        }       
+        
+        } else {
+            i++; 
+        }
     }
 }
 
@@ -297,6 +301,9 @@ void Player::stunChampion(ChampionCard& champion) {
 
 void Player::sacrificeChampion(ChampionCard& champion) {
     m_playArea.removeChampion(champion);
+    // Créer une copie du Champion pour la zone de sacrifice
+    ChampionCard* sacrificedChampion = new ChampionCard(champion);
+    addToSacrificeZone(sacrificedChampion);
     std::cout << m_name << ": Champion " << champion.getName() << " sacrifié !" << std::endl;
 }
 
@@ -342,6 +349,7 @@ Deck& Player::getDeck() { return m_deck; }
 Hand& Player::getHand() { return m_hand; }
 DiscardPile& Player::getDiscardPile() { return m_discardPile; }
 InPlayArea& Player::getPlayArea() { return m_playArea; }
+std::vector<Card*>& Player::getSacrificeZone() { return m_sacrificeZone; }
 
 bool Player::isEliminated() const { return m_eliminated; }
 
@@ -371,3 +379,29 @@ void Player::setName(const std::string& name) { m_name = name; }
 void Player::setHealth(int health) { m_health = health; }
 void Player::setEliminated(bool eliminated) { m_eliminated = eliminated; }
 void Player::setGold(int gold) { m_gold = gold; }
+
+// Gestion de la Zone de Sacrifice
+void Player::addToSacrificeZone(Card* card) {
+    if (card) {
+        m_sacrificeZone.push_back(card);
+        std::cout << "→ " << card->getName() << " placée dans la Zone de Sacrifice de " << m_name << std::endl;
+    }
+}
+
+void Player::viewSacrificeZone() const {
+    std::cout << "\n╔═══════════════════════════════════════════════╗" << std::endl;
+    std::cout << "║       💀 ZONE DE SACRIFICE - " << m_name << std::string(24 - m_name.length(), ' ') << "║" << std::endl;
+    std::cout << "╚═══════════════════════════════════════════════╝" << std::endl;
+    
+    if (m_sacrificeZone.empty()) {
+        std::cout << "La zone de sacrifice est vide." << std::endl;
+    } else {
+        std::cout << "Nombre de cartes: " << m_sacrificeZone.size() << std::endl;
+        std::cout << "\nCartes sacrifiées:" << std::endl;
+        for (size_t i = 0; i < m_sacrificeZone.size(); ++i) {
+            std::cout << (i + 1) << ". " << m_sacrificeZone[i]->getName() 
+                      << " (" << m_sacrificeZone[i]->getType() << ")" << std::endl;
+        }
+    }
+    std::cout << "═══════════════════════════════════════════════" << std::endl;
+}

@@ -12,12 +12,12 @@ ChampionCard::ChampionCard(const std::string name, int cost, Faction faction, co
     : Card(name, cost, faction, type), 
       m_defense(defense), 
       m_isGuard(isGuard), 
-      m_isTapped(true),  // Les champions entrent en jeu DÉMOBILISÉS (tapped = true)
+      m_isTapped(false),  // Les champions entrent en jeu MOBILISÉS (tapped = false)
       m_currentDamage(0), // Initialiser les dégâts à 0
       m_abilities(abilities)
 {
     std::cout << "Champion créé: " << name << " (Défense: " << defense 
-         << ", Garde: " << (isGuard ? "Oui" : "Non") << ", État: Démobilisé)" << std::endl;
+         << ", Garde: " << (isGuard ? "Oui" : "Non") << ", État: Mobilisé)" << std::endl;
 }
 
 ChampionCard::~ChampionCard() {
@@ -298,11 +298,11 @@ void ChampionCard::play(Player& owner, Player& opponent) {
     std::cout << owner.getName() << " joue le champion: " << getName() << std::endl;
     std::cout << "═══════════════════════════════════════════════" << std::endl;
     
-    // Le champion entre en jeu démobilisé (peut être activé au tour suivant)
-    m_isTapped = false;
+    // Le champion entre en jeu mobilisé (déjà défini dans le constructeur)
+    // Il peut être activé immédiatement durant la Phase Principale
     m_currentDamage = 0;
     
-    std::cout << "→ " << getName() << " entre en jeu mobilisé !" << "contre le joeur "<<opponent.getName()<<std::endl;
+    std::cout << "→ " << getName() << " entre en jeu mobilisé !" << " contre le joueur " << opponent.getName() << std::endl;
     
     // Afficher les caractéristiques
     std::cout << "   Défense: " << m_defense;

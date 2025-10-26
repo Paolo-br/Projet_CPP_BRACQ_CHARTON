@@ -14,7 +14,7 @@ private:
     int combatReserve;
     Player* opponent;
     std::set<Faction> factionsPlayedThisTurn; // Track des factions jouées ce tour
-    
+    std::set<Faction> allyAbilitiesTriggeredThisTurn; // Track des capacités Allié déjà déclenchées ce tour
 
     bool nextCardGoesOnTop;       // La prochaine carte acquise va sur le deck
     bool nextActionGoesOnTop;     // La prochaine ACTION acquise va sur le deck
@@ -55,6 +55,11 @@ public:
     bool hasFactionBeenPlayed(Faction faction) const;
     void clearFactionsPlayed();
     int getFactionCount(Faction faction) const;
+    
+    // Gestion des capacités Alliées déjà déclenchées
+    void markAllyAbilityTriggered(Faction faction);
+    bool hasAllyAbilityBeenTriggered(Faction faction) const;
+    void clearAllyAbilitiesTriggered();
     
     // Gestion des effets Guild de manipulation du deck
     void setNextCardGoesOnTop(bool value);

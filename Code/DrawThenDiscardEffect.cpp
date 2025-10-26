@@ -25,14 +25,12 @@ void DrawThenDiscardEffect::apply(Player& player, Turn& turn) {
     
     // Piocher les cartes
     std::cout << player.getName() << " pioche " << m_drawCount << " carte(s)" << std::endl;
-    for (int i = 0; i < m_drawCount; ++i) {
-        Card* drawnCard = player.getDeck().draw();
-        if (drawnCard != nullptr) {
-            player.getHand().add(drawnCard);
-        } else {
-            std::cout << "Impossible de piocher : deck vide" << std::endl;
-            break;
-        }
+    size_t handSizeBefore = player.getHand().size();
+    player.drawCards(m_drawCount);
+    size_t cardsActuallyDrawn = player.getHand().size() - handSizeBefore;
+    
+    if (cardsActuallyDrawn < static_cast<size_t>(m_drawCount)) {
+        std::cout << "Seulement " << cardsActuallyDrawn << " carte(s) ont pu être piochées" << std::endl;
     }
     
     // Défausser les cartes

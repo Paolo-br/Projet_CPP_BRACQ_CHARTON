@@ -7,13 +7,13 @@ CXXFLAGS=-Wall -Wextra -Werror -std=c++11
 # Compilation de la partie principale
 main: main.o Player.o Deck.o Card.o ChampionCard.o Ability.o SacrificeAbility.o Hand.o InPlayArea.o DiscardPile.o Market.o AllyAbility.o ActivateAbility.o Faction.o Game.o GameSettings.o PrimaryAbility.o Turn.o \
       ActionCard.o ItemCard.o Effect.o GoldEffect.o AttackEffect.o HealEffect.o DrawEffect.o SacrificeEffect.o PrepareChampionEffect.o StunChampionEffect.o DiscardOpponentEffect.o ConditionalEffect.o ChoiceEffect.o DrawThenDiscardEffect.o \
-      PutNextCardOnTopEffect.o PutNextCardInHandEffect.o PutFromDiscardOnTopEffect.o Utils.o
+      PutNextCardOnTopEffect.o PutNextCardInHandEffect.o PutFromDiscardOnTopEffect.o OptionalSacrificeEffect.o Utils.o
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
 # Compilation des tests
 test: test.o Player.o Deck.o Card.o ChampionCard.o Ability.o SacrificeAbility.o Hand.o InPlayArea.o DiscardPile.o Market.o AllyAbility.o ActivateAbility.o Faction.o Game.o GameSettings.o PrimaryAbility.o Turn.o \
       ActionCard.o ItemCard.o Effect.o GoldEffect.o AttackEffect.o HealEffect.o DrawEffect.o SacrificeEffect.o PrepareChampionEffect.o StunChampionEffect.o DiscardOpponentEffect.o ConditionalEffect.o ChoiceEffect.o DrawThenDiscardEffect.o \
-      PutNextCardOnTopEffect.o PutNextCardInHandEffect.o PutFromDiscardOnTopEffect.o Utils.o
+      PutNextCardOnTopEffect.o PutNextCardInHandEffect.o PutFromDiscardOnTopEffect.o OptionalSacrificeEffect.o Utils.o
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
 .PHONY: run run-test clean

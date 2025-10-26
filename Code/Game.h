@@ -83,6 +83,8 @@ public:
     void acquireCardsPhase();
     void combatPhase();
     void viewDiscardPile();
+    void viewSacrificeZone();
+    void viewOpponentDiscardPile();
     
     // Gestion des capacités Alliées
     void triggerAllyAbilities(Faction faction);

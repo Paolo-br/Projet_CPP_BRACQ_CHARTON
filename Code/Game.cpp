@@ -289,6 +289,8 @@ void Game::displayMainPhaseOptions() {
     std::cout << std::endl;
     
     std::cout << "[7] 📚 Voir ma défausse (" << activePlayer.getDiscardPile().size() << " cartes)" << std::endl;
+    std::cout << "[8] 💀 Voir ma Zone de Sacrifice (" << activePlayer.getSacrificeZone().size() << " cartes)" << std::endl;
+    std::cout << "[9] 👁️  Voir la défausse d'un adversaire" << std::endl;
     
     std::cout << "───────────────────────────────────────────────" << std::endl;
     std::cout << "[0] Terminer mon tour" << std::endl;
@@ -317,6 +319,12 @@ void Game::handleMainPhaseChoice(int choice) {
             break;
         case 7:
             viewDiscardPile();
+            break;
+        case 8:
+            viewSacrificeZone();
+            break;
+        case 9:
+            viewOpponentDiscardPile();
             break;
         default:
             std::cout << "Option invalide!" << std::endl;
@@ -347,12 +355,16 @@ void Game::playCardFromHand(int handIndex) {
         bool wasAlreadyPlayed = m_currentTurn.hasFactionBeenPlayed(cardFaction);
         m_currentTurn.addFactionPlayed(cardFaction);
         
-        // Si c'est la 2ème+ carte de cette faction, déclencher les capacités Alliées
+        // Si c'est la 2ème+ carte de cette faction ET que les capacités Allié n'ont pas encore été déclenchées
         if (!wasAlreadyPlayed) {
             std::cout << "  → Première carte " << factionToString(cardFaction) << " jouée ce tour" << std::endl;
-        } else {
+        } else if (!m_currentTurn.hasAllyAbilityBeenTriggered(cardFaction)) {
             std::cout << "  → 🤝 DÉCLENCHEMENT DES CAPACITÉS ALLIÉES " << factionToString(cardFaction) << "!" << std::endl;
             triggerAllyAbilities(cardFaction);
+            // Marquer que les capacités Allié de cette faction ont été déclenchées
+            m_currentTurn.markAllyAbilityTriggered(cardFaction);
+        } else {
+            std::cout << "  → 2+ cartes " << factionToString(cardFaction) << " en jeu (capacités Allié déjà déclenchées ce tour)" << std::endl;
         }
     }
 
@@ -470,7 +482,7 @@ void Game::combatPhase() {
                 std::cout << "  Champions:" << std::endl;
                 for (size_t j = 0; j < champions.size(); ++j) {
                     ChampionCard& champion = champions[j];
-                    std::cout <<champion.getName()<< std::endl;
+                    std::cout << champion.getName() << std::endl;
                 }
             }
         }
@@ -537,10 +549,15 @@ void Game::combatPhase() {
     for (size_t i = 0; i < champions.size(); ++i) {
         ChampionCard& champion = champions[i];
         if (!champion.isStunned()) {
+            // Si des Gardes existent, afficher les Gardes
+            if (hasGuard && !champion.isGuard()) {
+                continue; // Sauter les non-Gardes
+            }
+            
             std::cout << (i + 1) << ". " << champion.getName()
                       << " (" << champion.getRemainingDefense() << " Def)";
             if (champion.isGuard()) {
-                std::cout << " [PROTÉGÉ] ";
+                std::cout << " [GARDE]";
             }
             std::cout << std::endl;
         }
@@ -569,6 +586,14 @@ void Game::combatPhase() {
             return;
         }
         
+        // Si des Gardes existent, on ne peut cibler que des Gardes
+        if (hasGuard && !targetChampion.isGuard()) {
+            std::cout << "❌ Vous ne pouvez pas cibler " << targetChampion.getName() 
+                      << " ! Des Champions Gardes protègent les autres champions." << std::endl;
+            std::cout << "Vous devez d'abord assommer tous les Gardes!" << std::endl;
+            return;
+        }
+        
         int combatUsed;
         std::cout << "\nAttaque sur " << targetChampion.getName() 
                   << " (Def: " << targetChampion.getRemainingDefense() << ")" << std::endl;
@@ -581,7 +606,7 @@ void Game::combatPhase() {
             targetChampion.takeDamage(combatUsed);
             
             if (targetChampion.isStunned()) {
-                std::cout <<targetChampion.getName() 
+                std::cout << targetChampion.getName() 
                           << " est ASSOMMÉ et va en défausse!" << std::endl;
                 targetPlayer.stunChampion(targetChampion);
             } else {
@@ -633,6 +658,88 @@ void Game::viewDiscardPile() {
     std::cin.get();
 }
 
+void Game::viewSacrificeZone() {
+    Player& activePlayer = getCurrentPlayer();
+    activePlayer.viewSacrificeZone();
+    
+    std::cout << "\nAppuyez sur [Entrée] pour revenir au menu..." << std::endl;
+    std::cin.ignore();
+    std::cin.get();
+}
+
+void Game::viewOpponentDiscardPile() {
+    // Afficher la liste des adversaires
+    std::cout << "\n╔═══════════════════════════════════════════════╗" << std::endl;
+    std::cout << "║    CONSULTER LA DÉFAUSSE D'UN ADVERSAIRE      ║" << std::endl;
+    std::cout << "╚═══════════════════════════════════════════════╝" << std::endl;
+    
+    std::vector<int> opponentIndices;
+    int displayIndex = 1;
+    
+    // modifier avec affichage raph
+    for (size_t i = 0; i < m_players.size(); ++i) {
+        if (static_cast<int>(i) != m_currentPlayerIndex) {
+            Player& opponent = m_players[i];
+            std::cout << "[" << displayIndex << "] " << opponent.getName()
+                      << " - Défausse: " << opponent.getDiscardPile().size() << " cartes";
+            if (opponent.isEliminated()) {
+                std::cout << " (ÉLIMINÉ)";
+            }
+            std::cout << std::endl;
+            opponentIndices.push_back(i);
+            displayIndex++;
+        }
+    }
+    
+    std::cout << "[0] Retour" << std::endl;
+    
+    int choice;
+    std::cout << "\nChoisissez un adversaire: ";
+    std::cin >> choice;
+    
+    if (choice == 0) return;
+    
+    if (choice > 0 && choice <= static_cast<int>(opponentIndices.size())) {
+        Player& selectedOpponent = m_players[opponentIndices[choice - 1]];
+        DiscardPile& discard = selectedOpponent.getDiscardPile();
+        
+        std::cout << "\n╔═══════════════════════════════════════════════╗" << std::endl;
+        std::cout << "║          📚 PILE DE DÉFAUSSE                  ║" << std::endl;
+        std::cout << "╚═══════════════════════════════════════════════╝" << std::endl;
+        std::cout << "Joueur: " << selectedOpponent.getName() << std::endl;
+        std::cout << "Nombre de cartes: " << discard.size() << std::endl;
+        std::cout << "───────────────────────────────────────────────" << std::endl;
+        
+        if (discard.isEmpty()) {
+            std::cout << "La défausse est vide." << std::endl;
+        } else {
+            std::cout << "\nCartes dans la défausse:" << std::endl;
+            std::vector<Card*> cards = discard.getCards();
+            for (size_t i = 0; i < cards.size(); ++i) {
+                Card* card = cards[i];
+                if (card) {
+                    std::cout << "  [" << (i + 1) << "] " << card->getName();
+                    
+                    // Afficher la faction si elle existe
+                    if (card->getFaction() != Faction::None) {
+                        std::cout << " (" << factionToString(card->getFaction()) << ")";
+                    }
+                    
+                    // Afficher le type de carte
+                    std::cout << " - " << card->getType();
+                    std::cout << std::endl;
+                }
+            }
+        }
+        
+        std::cout << "───────────────────────────────────────────────" << std::endl;
+        std::cout << "Appuyez sur [Entrée] pour revenir au menu..." << std::endl;
+        std::cin.ignore();
+        std::cin.get();
+    } else {
+        std::cout << "Choix invalide!" << std::endl;
+    }
+}
 
 void Game::acquireCardsPhase() {
     if (m_currentTurn.getGoldReserve() <= 0) {
@@ -669,6 +776,7 @@ void Game::acquireCardFromMarket(int marketIndex) {
         m_currentTurn.spendGold(cost);
         activePlayer.acquireCard(card, m_currentTurn);
         m_market.removeCardFromMarket(card);
+        m_market.refillMarket(); // Remplir l'emplacement vide du marché
         std::cout << activePlayer.getName() << " acquiert: " << card->getName() << std::endl;
     } else {
         std::cout << "Or insuffisant! Coût: " << cost << " Vous avez: "
@@ -1023,14 +1131,40 @@ void Game::sacrificeCard(const std::string& cardName) {
             Card* card = cardsInPlay[choice - 1];
             std::cout << "Sacrifice de " << card->getName() << std::endl;
             
-            // Si la carte a un effet de sacrifice, l'activer
+            // Déclencher la capacité Sacrifier si elle existe
             if (card->hasSacrificeAbility()) {
-                std::cout << "→ Activation de l'effet de sacrifice" << std::endl;
-                // L'effet de sacrifice devrait être déclenché ici
+                std::cout << "→ Activation de la capacité Sacrifier" << std::endl;
+                
+                // Cast vers ActionCard ou ItemCard pour déclencher la SacrificeAbility
+                if (auto* actionCard = dynamic_cast<ActionCard*>(card)) {
+                    for (auto& ability : actionCard->getAbilities()) {
+                        if (ability->getName() == "SacrificeAbility") {
+                            ability->trigger(activePlayer, m_currentTurn);
+                        }
+                    }
+                } else if (auto* itemCard = dynamic_cast<ItemCard*>(card)) {
+                    for (auto& ability : itemCard->getAbilities()) {
+                        if (ability->getName() == "SacrificeAbility") {
+                            ability->trigger(activePlayer, m_currentTurn);
+                        }
+                    }
+                }
             }
             
-            // Retirer de la zone de jeu et mettre en défausse
-            activePlayer.discardCard(card);
+            // Vérifier si c'est une Gemme de Feu
+            if (card->getName() == "Gemme de Feu") {
+                std::cout << "→ Gemme de Feu retourne dans la pile Gemmes de Feu" << std::endl;
+                // Ajouter la carte à la pile de Gemmes de Feu du marché
+                ItemCard* fireGem = dynamic_cast<ItemCard*>(card);
+                if (fireGem) {
+                    m_market.getFireGems().push_back(fireGem);
+                }
+            } else {
+                // Placer dans la Zone de Sacrifice
+                activePlayer.addToSacrificeZone(card);
+            }
+            
+            // Retirer de la zone de jeu
             cardsInPlay.erase(cardsInPlay.begin() + (choice - 1));
             
         } else if (choice <= static_cast<int>(cardsInPlay.size() + champions.size())) {
@@ -1040,13 +1174,20 @@ void Game::sacrificeCard(const std::string& cardName) {
             
             std::cout << "Sacrifice de " << champion.getName() << std::endl;
             
-            // Si le champion a un effet de sacrifice, l'activer
+            // Déclencher la capacité Sacrifier si elle existe
             if (champion.hasSacrificeAbility()) {
+                std::cout << "→ Activation de la capacité Sacrifier" << std::endl;
                 champion.triggerSacrificeAbility(activePlayer, m_currentTurn);
             }
             
-            // Retirer le champion de la zone de jeu
-            activePlayer.sacrificeChampion(champion);
+            // Vérifier si c'est une Gemme de Feu (peu probable pour un Champion)
+            if (champion.getName() == "Gemme de Feu") {
+                std::cout << "→ Gemme de Feu retourne dans la pile Gemmes de Feu" << std::endl;
+                // Normalement, une Gemme de Feu n'est pas un Champion, mais par sécurité
+            } else {
+                // Placer dans la Zone de Sacrifice (déjà géré dans sacrificeChampion)
+                activePlayer.sacrificeChampion(champion);
+            }
         }
     }
 }

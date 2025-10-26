@@ -19,6 +19,7 @@
 #include "PutNextCardOnTopEffect.h"
 #include "PutNextCardInHandEffect.h"
 #include "PutFromDiscardOnTopEffect.h"
+#include "OptionalSacrificeEffect.h"
 #include "Ability.h"
 #include "AllyAbility.h"
 #include "SacrificeAbility.h"
@@ -686,12 +687,7 @@ void Market::initializeBaseSet() {
     // Necros Ally: +6 Combat
     std::vector<Effect*> primaryEffs_darkReward;
     primaryEffs_darkReward.push_back(new GoldEffect(3));
-    // TODO COMPLEXE: Nécessite OptionalSacrificeEffect()
-    // Effet de sacrifice optionnel depuis main OU défausse. Requiert:
-    // 1. Nouvelle classe OptionalSacrificeEffect(from=HAND_OR_DISCARD, count=1, bonus=nullptr)
-    // 2. Afficher cartes de main + défausse
-    // 3. Laisser joueur choisir ou refuser
-    // 4. Si choisi: retirer carte et la mettre en zone de sacrifice
+    primaryEffs_darkReward.push_back(new OptionalSacrificeEffect(1, 1, true, nullptr));
     
     std::vector<Effect*> allyEffs_darkReward;
     allyEffs_darkReward.push_back(new AttackEffect(6));
@@ -723,7 +719,7 @@ void Market::initializeBaseSet() {
     for (int i = 0; i < 3; ++i) {
         std::vector<Effect*> primaryEffs_deathTouch;
         primaryEffs_deathTouch.push_back(new AttackEffect(2));
-        // TODO COMPLEXE: OptionalSacrificeEffect(from=HAND_OR_DISCARD, count=1)
+        primaryEffs_deathTouch.push_back(new OptionalSacrificeEffect(1, 1, true, nullptr));
         
         std::vector<Effect*> allyEffs_deathTouch;
         allyEffs_deathTouch.push_back(new AttackEffect(2));
@@ -775,8 +771,7 @@ void Market::initializeBaseSet() {
     // You may sacrifice a card in your hand or discard pile. If you do, gain an additional +3 Combat
     std::vector<Effect*> activateEffs_krythos;
     activateEffs_krythos.push_back(new AttackEffect(3));
-    // TODO COMPLEXE: OptionalSacrificeEffect(from=HAND_OR_DISCARD, count=1, bonus=+3 Combat)
-    // Si sacrifice effectué, ajouter +3 Combat supplémentaire
+    activateEffs_krythos.push_back(new OptionalSacrificeEffect(1, 1, true, new AttackEffect(3)));
     
     std::vector<Ability*> abilities_krythos;
     abilities_krythos.push_back(new ActivateAbility(activateEffs_krythos));
@@ -790,7 +785,7 @@ void Market::initializeBaseSet() {
     // Necros Ally: Draw 1
     std::vector<Effect*> primaryEffs_lifeDrain;
     primaryEffs_lifeDrain.push_back(new AttackEffect(8));
-    // TODO COMPLEXE: OptionalSacrificeEffect(from=HAND_OR_DISCARD, count=1)
+    primaryEffs_lifeDrain.push_back(new OptionalSacrificeEffect(1, 1, true, nullptr));
     
     std::vector<Effect*> allyEffs_lifeDrain;
     allyEffs_lifeDrain.push_back(new DrawEffect(1));
@@ -807,7 +802,7 @@ void Market::initializeBaseSet() {
     // You may sacrifice a card in your hand or discard pile. If you do, gain an additional +2 Combat
     std::vector<Effect*> activateEffs_lys;
     activateEffs_lys.push_back(new AttackEffect(2));
-    // TODO COMPLEXE: OptionalSacrificeEffect(from=HAND_OR_DISCARD, count=1, bonus=+2 Combat)
+    activateEffs_lys.push_back(new OptionalSacrificeEffect(1, 1, true, new AttackEffect(2)));
     
     std::vector<Ability*> abilities_lys;
     abilities_lys.push_back(new ActivateAbility(activateEffs_lys));
@@ -822,7 +817,7 @@ void Market::initializeBaseSet() {
     for (int i = 0; i < 2; ++i) {
         std::vector<Effect*> primaryEffs_rot;
         primaryEffs_rot.push_back(new AttackEffect(4));
-        // TODO COMPLEXE: OptionalSacrificeEffect(from=HAND_OR_DISCARD, count=1)
+        primaryEffs_rot.push_back(new OptionalSacrificeEffect(1, 1, true, nullptr));
         
         std::vector<Effect*> allyEffs_rot;
         allyEffs_rot.push_back(new AttackEffect(3));
@@ -841,8 +836,7 @@ void Market::initializeBaseSet() {
     // Necros Ally: Draw 1
     std::vector<Effect*> activateEffs_tyrannor;
     activateEffs_tyrannor.push_back(new AttackEffect(4));
-    // TODO COMPLEXE: OptionalSacrificeEffect(from=HAND_OR_DISCARD, count=2, maxCount=2)
-    // Permet de sacrifier 0, 1 ou 2 cartes
+    activateEffs_tyrannor.push_back(new OptionalSacrificeEffect(1, 2, true, nullptr)); // up to 2 cards
     
     std::vector<Effect*> allyEffs_tyrannor;
     allyEffs_tyrannor.push_back(new DrawEffect(1));

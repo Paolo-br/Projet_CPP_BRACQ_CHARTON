@@ -4,6 +4,7 @@
 Turn::Turn() : phase(Phase::MAIN), goldReserve(0), combatReserve(0), opponent(nullptr),
                nextCardGoesOnTop(false), nextActionGoesOnTop(false), nextCardGoesInHand(false) {
     factionsPlayedThisTurn.clear();
+    allyAbilitiesTriggeredThisTurn.clear();
 }
 
 
@@ -33,6 +34,7 @@ void Turn::reset() {
     goldReserve = 0;
     combatReserve = 0;
     factionsPlayedThisTurn.clear();
+    allyAbilitiesTriggeredThisTurn.clear();
     nextCardGoesOnTop = false;
     nextActionGoesOnTop = false;
     nextCardGoesInHand = false;
@@ -102,7 +104,25 @@ void Turn::clearFactionsPlayed() {
 
 int Turn::getFactionCount(Faction faction) const {
     return factionsPlayedThisTurn.count(faction);
-}// Gestion des effets Guild de manipulation du deck
+}
+
+// Gestion des capacités Alliées déjà déclenchées
+void Turn::markAllyAbilityTriggered(Faction faction) {
+    if (faction != Faction::None) {
+        allyAbilitiesTriggeredThisTurn.insert(faction);
+        std::cout << "  → Capacités Alliées " << factionToString(faction) << " marquées comme déclenchées" << std::endl;
+    }
+}
+
+bool Turn::hasAllyAbilityBeenTriggered(Faction faction) const {
+    return allyAbilitiesTriggeredThisTurn.find(faction) != allyAbilitiesTriggeredThisTurn.end();
+}
+
+void Turn::clearAllyAbilitiesTriggered() {
+    allyAbilitiesTriggeredThisTurn.clear();
+}
+
+// Gestion des effets Guild de manipulation du deck
 void Turn::setNextCardGoesOnTop(bool value) {
     nextCardGoesOnTop = value;
 }

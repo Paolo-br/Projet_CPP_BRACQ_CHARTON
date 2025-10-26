@@ -5,10 +5,10 @@
 DrawEffect::DrawEffect(int value) : Effect(value) {}
 
 void DrawEffect::apply(Player& player, Turn& turn) {
-    std::cout << "On a tant de point d'attaque"<<turn.getCombatReserve()<<std::endl;
-    for (int i = 0; i < Effect::getValue(); ++i) {
-        player.getDeck().draw();
-    }
+    (void)turn; // Paramètre non utilisé
+    int cardsToDraw = Effect::getValue();
+    std::cout << "EFFET: Piocher " << cardsToDraw << " carte(s)" << std::endl;
+    player.drawCards(cardsToDraw);
 }
 
 Effect* DrawEffect::clone() const {

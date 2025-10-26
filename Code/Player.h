@@ -22,6 +22,7 @@ private:
     Hand m_hand;
     DiscardPile m_discardPile;
     InPlayArea m_playArea; // Cartes en jeu (Champions)
+    std::vector<Card*> m_sacrificeZone; // Zone de Sacrifice
     bool m_eliminated;
 
 public:
@@ -42,6 +43,7 @@ public:
     Hand& getHand();
     DiscardPile& getDiscardPile();
     InPlayArea& getPlayArea();
+    std::vector<Card*>& getSacrificeZone();
     bool isEliminated() const;
     int getGold();
 
@@ -67,6 +69,10 @@ public:
     void stunChampion(ChampionCard& champion);
     void sacrificeChampion(ChampionCard& champion);
     void addChampionToPlayArea(ChampionCard& champion);
+    
+    // Gestion de la Zone de Sacrifice
+    void addToSacrificeZone(Card* card);
+    void viewSacrificeZone() const;
 
     
     bool canBeAttacked() const;  // Vérifie si le joueur peut être attaqué

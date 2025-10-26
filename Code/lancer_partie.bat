@@ -9,7 +9,7 @@ wsl --list >nul 2>&1
 if %ERRORLEVEL% EQU 0 (
     echo WSL detecte ! Compilation via WSL...
     echo.
-    wsl bash -c "cd '/mnt/c/Users/paolo/OneDrive/Desktop/ET4/C++/Projet/Code' && make clean && make main && ./main"
+    wsl bash -c "cd '/mnt/c/Users/paolo/OneDrive/Desktop/ET4/C++/Projet/Code' && make clean && make && ./main"
 ) else (
     echo WSL non detecte. Tentative avec g++ local...
     echo.
@@ -18,7 +18,7 @@ if %ERRORLEVEL% EQU 0 (
     g++ --version >nul 2>&1
     if %ERRORLEVEL% EQU 0 (
         echo Compilation en cours...
-        g++ -Wall -Wextra -std=c++11 main.cpp Player.cpp Deck.cpp Card.cpp ChampionCard.cpp Ability.cpp SacrificeAbility.cpp Hand.cpp InPlayArea.cpp DiscardPile.cpp Market.cpp AllyAbility.cpp ActivateAbility.cpp Faction.cpp Game.cpp GameSettings.cpp PrimaryAbility.cpp Turn.cpp ActionCard.cpp ItemCard.cpp Effect.cpp GoldEffect.cpp AttackEffect.cpp HealEffect.cpp DrawEffect.cpp SacrificeEffect.cpp PrepareChampionEffect.cpp StunChampionEffect.cpp DiscardOpponentEffect.cpp ConditionalEffect.cpp ChoiceEffect.cpp DrawThenDiscardEffect.cpp Utils.cpp -o main.exe
+        g++ -Wall -Wextra -std=c++11 main.cpp Player.cpp Deck.cpp Card.cpp ChampionCard.cpp Ability.cpp SacrificeAbility.cpp Hand.cpp InPlayArea.cpp DiscardPile.cpp Market.cpp AllyAbility.cpp ActivateAbility.cpp Faction.cpp Game.cpp GameSettings.cpp PrimaryAbility.cpp Turn.cpp ActionCard.cpp ItemCard.cpp Effect.cpp GoldEffect.cpp AttackEffect.cpp HealEffect.cpp DrawEffect.cpp SacrificeEffect.cpp PrepareChampionEffect.cpp StunChampionEffect.cpp DiscardOpponentEffect.cpp ConditionalEffect.cpp ChoiceEffect.cpp DrawThenDiscardEffect.cpp PutNextCardOnTopEffect.cpp PutNextCardInHandEffect.cpp PutFromDiscardOnTopEffect.cpp OptionalSacrificeEffect.cpp Utils.cpp -o main.exe
         
         if %ERRORLEVEL% EQU 0 (
             echo.
