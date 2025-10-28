@@ -1095,62 +1095,7 @@ void Market::initializeBaseSet() {
         m_marketDeck.addCard(wolfShaman);
     }
 
-    // —————————————————————
-    // DECKS PERSONNELS
-    // —————————————————————
-    // Gold (×28) - Coût: 0
-    // +1 Gold
-    for (int i = 0; i < 28; ++i) {
-        std::vector<Effect*> primaryEffs_gold;
-        primaryEffs_gold.push_back(new GoldEffect(1));
-        
-        std::vector<Ability*> abilities_gold;
-        abilities_gold.push_back(new PrimaryAbility(primaryEffs_gold));
-        
-        ItemCard* gold = new ItemCard("Gold", 0, Faction::None, "Item", {}, abilities_gold);
-        m_marketDeck.addCard(gold);
-    }
-
-    // Shortsword (×4) - Coût: 0
-    // +2 Combat
-    for (int i = 0; i < 4; ++i) {
-        std::vector<Effect*> primaryEffs_sword;
-        primaryEffs_sword.push_back(new AttackEffect(2));
-        
-        std::vector<Ability*> abilities_sword;
-        abilities_sword.push_back(new PrimaryAbility(primaryEffs_sword));
-        
-        ItemCard* sw = new ItemCard("Shortsword", 0, Faction::None, "Item", {}, abilities_sword);
-        m_marketDeck.addCard(sw);
-    }
-
-    // Dagger (×4) - Coût: 0
-    // +1 Combat
-    for (int i = 0; i < 4; ++i) {
-        std::vector<Effect*> primaryEffs_dagger;
-        primaryEffs_dagger.push_back(new AttackEffect(1));
-        
-        std::vector<Ability*> abilities_dagger;
-        abilities_dagger.push_back(new PrimaryAbility(primaryEffs_dagger));
-        
-        ItemCard* dg = new ItemCard("Dagger", 0, Faction::None, "Item", {}, abilities_dagger);
-        m_marketDeck.addCard(dg);
-    }
-
-    // Ruby (×4) - Coût: 1
-    // +2 Gold
-    for (int i = 0; i < 4; ++i) {
-        std::vector<Effect*> primaryEffs_ruby;
-        primaryEffs_ruby.push_back(new GoldEffect(2));
-        
-        std::vector<Ability*> abilities_ruby;
-        abilities_ruby.push_back(new PrimaryAbility(primaryEffs_ruby));
-        
-        ItemCard* ruby = new ItemCard("Ruby", 1, Faction::None, "Item", {}, abilities_ruby);
-        m_marketDeck.addCard(ruby);
-    }
-
-// Mélanger le deck du marché
+    // Mélanger le deck du marché
     m_marketDeck.shuffle();
 
     // Initialiser les 5 cartes visibles

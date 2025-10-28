@@ -17,6 +17,11 @@ Player::Player(const std::string& name, int health, const Deck& deck,
 
 // 1. Destructeur
 Player::~Player() {
+    // Libérer la mémoire des cartes dans la zone de sacrifice
+    for (Card* card : m_sacrificeZone) {
+        delete card;
+    }
+    m_sacrificeZone.clear();
     std::cout << "Destructeur Player: " << m_name << std::endl;
 }
 
@@ -106,9 +111,9 @@ void Player::initializeStarterDeck() {
     ItemCard* dagger = new ItemCard("Dague", 0, Faction::None, "Item", daggerEffects);
     m_deck.addCard(dagger);
 
-    // 1 Rubis (valeur de Santé = 2, coût = 0)
+    // 1 Rubis (valeur d'Or = 2, coût = 0)
     std::vector<Effect*> rubyEffects;
-    rubyEffects.push_back(new HealEffect(2)); // Effet : ajouter 2 Santé (corrigé de AttackEffect)
+    rubyEffects.push_back(new GoldEffect(2)); // Effet : ajouter 2 Or
     ItemCard* ruby = new ItemCard("Rubis", 0, Faction::None, "Item", rubyEffects);
     m_deck.addCard(ruby);
 
@@ -237,11 +242,9 @@ void Player::attackChampion(ChampionCard& champion, int combatDamage) {
     }
     
     champion.takeDamage(combatDamage);
+    std::cout << "⚔️ " << champion.getName() << " a reçu " << combatDamage << " dégâts!" << std::endl;
     
-    // Vérifier si le champion est assommé
-    if (champion.isStunned()) {
-        stunChampion(champion);
-    }
+   
 }
 
 ChampionCard* Player::findChampionToAttack() {
@@ -320,7 +323,8 @@ void Player::displayStatus() const {
               << " | " << (m_eliminated ? "ÉLIMINÉ" : "En jeu") << std::endl;
     
     // Afficher l'état des champions en jeu
-    const std::vector<ChampionCard>& champions = const_cast<InPlayArea&>(m_playArea).getChampions();
+    const std::vector<ChampionCard>& champions = m_playArea.getChampions();
+    
     if (!champions.empty()) {
         std::cout << "  Champions en jeu:" << std::endl;
         for (const auto& champion : champions) {

@@ -48,6 +48,10 @@ std::vector<ChampionCard>& InPlayArea::getChampions() {
     return m_champions;
 }
 
+const std::vector<ChampionCard>& InPlayArea::getChampions() const {
+    return m_champions;
+}
+
 // Méthodes utilitaires
 bool InPlayArea::hasGuardInPlay() const {
     for (const auto& champion : m_champions) {

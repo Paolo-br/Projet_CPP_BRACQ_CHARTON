@@ -26,6 +26,7 @@ public:
     void addChampion(ChampionCard champion);
     void removeChampion(ChampionCard& champion);
     std::vector<ChampionCard>& getChampions();
+    const std::vector<ChampionCard>& getChampions() const;
     
     // Méthodes utilitaires
     bool hasGuardInPlay() const;

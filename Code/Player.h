@@ -6,7 +6,7 @@
 #include <list>
 #include "Deck.h"
 #include "Card.h"
-#include"Hand.h"
+#include "Hand.h"
 #include "DiscardPile.h"
 #include "InPlayArea.h"
 
