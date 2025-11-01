@@ -1,13 +1,14 @@
 #include "Player.h"
-#include "ChampionCard.h"
-#include "ItemCard.h"
-#include "ActionCard.h"
-#include "GoldEffect.h"
-#include "AttackEffect.h"
-#include "HealEffect.h"
+#include "CardsType/ChampionCard.h"
+#include "CardsType/ItemCard.h"
+#include "CardsType/ActionCard.h"
+#include "Effects/GoldEffect.h"
+#include "Effects/AttackEffect.h"
+#include "Effects/HealEffect.h"
 
 
 #include <iostream>
+#include "Utils.h"
 
 // Constructeur
 Player::Player(const std::string& name, int health, const Deck& deck,
@@ -17,12 +18,12 @@ Player::Player(const std::string& name, int health, const Deck& deck,
 
 // 1. Destructeur
 Player::~Player() {
-    // Libérer la mémoire des cartes dans la zone de sacrifice
-    for (Card* card : m_sacrificeZone) {
+    std::cout << "Destructeur Player: " << m_name << std::endl;
+    // Supprimer les cartes de la zone de sacrifice (si présentes)
+    for (auto card : m_sacrificeZone) {
         delete card;
     }
     m_sacrificeZone.clear();
-    std::cout << "Destructeur Player: " << m_name << std::endl;
 }
 
 // 2. Constructeur de copie (profonde)
@@ -111,9 +112,9 @@ void Player::initializeStarterDeck() {
     ItemCard* dagger = new ItemCard("Dague", 0, Faction::None, "Item", daggerEffects);
     m_deck.addCard(dagger);
 
-    // 1 Rubis (valeur d'Or = 2, coût = 0)
+    // 1 Rubis (valeur de Santé = 2, coût = 0)
     std::vector<Effect*> rubyEffects;
-    rubyEffects.push_back(new GoldEffect(2)); // Effet : ajouter 2 Or
+    rubyEffects.push_back(new GoldEffect(2)); // Effet : ajouter 2 Santé (corrigé de AttackEffect)
     ItemCard* ruby = new ItemCard("Rubis", 0, Faction::None, "Item", rubyEffects);
     m_deck.addCard(ruby);
 
@@ -137,7 +138,7 @@ void Player::discardHand() {
 }
 
 void Player::acquireCard(Card* card, Turn& turn) {
-    // Vérifier les flags Guild de manipulation du deck
+    // Vérifier les flags de manipulation du deck
     bool goesToHand = turn.getNextCardGoesInHand();
     bool goesToTop = turn.getNextCardGoesOnTop();
     bool actionGoesToTop = turn.getNextActionGoesOnTop();
@@ -162,7 +163,7 @@ void Player::acquireCard(Card* card, Turn& turn) {
     // Si l'effet "next action on top" est actif et c'est une Action
     if (actionGoesToTop && card->getType() == "Action") {
         m_deck.addCardOnTop(card);
-        std::cout << "→ " << m_name << " acquiert " << card->getName() << " (Action) et la place SUR LE DESSUS DU DECK!" << std::endl;
+        std::cout << "→ " << m_name << " acquiert " << card->getName() << "et la place SUR LE DESSUS DU DECK!" << std::endl;
         return;
     }
     
@@ -217,7 +218,7 @@ void Player::attackPlayer(int combatDamage) {
         return;
     }
         takeDamage(combatDamage);
-    std::cout << "⚔️ " << m_name << " attaqué directement pour " << combatDamage << " dégâts!" << std::endl;
+    std::cout <<m_name << " attaqué directement pour " << combatDamage << " dégâts!" << std::endl;
 }
 
 
@@ -242,9 +243,11 @@ void Player::attackChampion(ChampionCard& champion, int combatDamage) {
     }
     
     champion.takeDamage(combatDamage);
-    std::cout << "⚔️ " << champion.getName() << " a reçu " << combatDamage << " dégâts!" << std::endl;
     
-   
+    // Vérifier si le champion est assommé
+    if (champion.isStunned()) {
+        stunChampion(champion);
+    }
 }
 
 ChampionCard* Player::findChampionToAttack() {
@@ -275,7 +278,9 @@ void Player::stunChampions() {
         ChampionCard& champion = champions[i];
         if (champion.isStunned()) {
             std::cout << champion.getName() << " est assommé !" << std::endl;
-            m_discardPile.add(&champion);
+            // Créer une copie sur le tas avant de l'enlever de la zone de jeu
+            ChampionCard* discardedChampion = new ChampionCard(champion);
+            m_discardPile.add(discardedChampion);
             champions.erase(champions.begin() + i);
         
         } else {
@@ -297,8 +302,10 @@ bool Player::hasGuardInPlay() const {
 }
 
 void Player::stunChampion(ChampionCard& champion) {
+    // Créer une copie sur le tas avant de retirer le champion de la zone de jeu
+    ChampionCard* discardedChampion = new ChampionCard(champion);
     m_playArea.removeChampion(champion);
-    m_discardPile.add(&champion);
+    m_discardPile.add(discardedChampion);
     std::cout << m_name << ": Champion " << champion.getName() << " assommé !" << std::endl;
 }
 
@@ -322,26 +329,16 @@ void Player::displayStatus() const {
               << " | Champions: " << m_playArea.getChampionCount() 
               << " | " << (m_eliminated ? "ÉLIMINÉ" : "En jeu") << std::endl;
     
-    // Afficher l'état des champions en jeu
-    const std::vector<ChampionCard>& champions = m_playArea.getChampions();
-    
+    // Afficher les champions en jeu en utilisant l'affichage de Raphael
+    const std::vector<ChampionCard>& champions = const_cast<InPlayArea&>(m_playArea).getChampions();
     if (!champions.empty()) {
         std::cout << "  Champions en jeu:" << std::endl;
+        std::vector<Card*> cards;
         for (const auto& champion : champions) {
-            std::cout << "    - " << champion.getName() 
-                      << " (Def: " << champion.getRemainingDefense() << "/" << champion.getDefense() << ")";
-            if (champion.isStunned()) {
-                std::cout << " [ASSOMMÉ]";
-            } else if (champion.getIsTapped()) {
-                std::cout << " [DÉMOBILISÉ]";
-            } else {
-                std::cout << " [MOBILISÉ]";
-            }
-            if (champion.isGuard()) {
-                std::cout << " [GARDE]";
-            }
-            std::cout << std::endl;
+            cards.push_back(const_cast<ChampionCard*>(&champion));
         }
+        // Utiliser le renderer centralisé pour afficher les champions élégamment
+        Utils::displayAllCards(cards, 2, 0);
     }
 }
 
@@ -394,7 +391,7 @@ void Player::addToSacrificeZone(Card* card) {
 
 void Player::viewSacrificeZone() const {
     std::cout << "\n╔═══════════════════════════════════════════════╗" << std::endl;
-    std::cout << "║       💀 ZONE DE SACRIFICE - " << m_name << std::string(24 - m_name.length(), ' ') << "║" << std::endl;
+    std::cout << "║         ZONE DE SACRIFICE - " << m_name << std::string(24 - m_name.length(), ' ') << "║" << std::endl;
     std::cout << "╚═══════════════════════════════════════════════╝" << std::endl;
     
     if (m_sacrificeZone.empty()) {

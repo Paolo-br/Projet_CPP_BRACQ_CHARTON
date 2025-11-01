@@ -13,6 +13,12 @@ InPlayArea::InPlayArea(std::vector<Card*> cards, std::vector<ChampionCard> champ
 
 InPlayArea::~InPlayArea() {
     std::cout << "Destructeur InPlayArea" << std::endl;
+    // Supprimer les cartes non-champion détenues dans la zone de jeu
+    for (auto card : m_cards) {
+        delete card;
+    }
+    m_cards.clear();
+    m_champions.clear();
 }
 
 // Gestion des cartes normales
@@ -21,6 +27,9 @@ void InPlayArea::add(Card* card) {
 }
 
 void InPlayArea::clear() {
+    for (auto card : m_cards) {
+        delete card;
+    }
     m_cards.clear();
 }
 
@@ -52,7 +61,7 @@ const std::vector<ChampionCard>& InPlayArea::getChampions() const {
     return m_champions;
 }
 
-// Méthodes utilitaires
+
 bool InPlayArea::hasGuardInPlay() const {
     for (const auto& champion : m_champions) {
         if (champion.isGuard() && champion.isReady()) {
@@ -70,6 +79,9 @@ void InPlayArea::mobilizeChampions() {
 }
 
 void InPlayArea::clearAll() {
+    for (auto card : m_cards) {
+        delete card;
+    }
     m_cards.clear();
     m_champions.clear();
     std::cout << "Zone de jeu complètement vidée" << std::endl;
