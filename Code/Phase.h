@@ -7,4 +7,4 @@ enum class Phase {
     DRAW
 };
 
-#endif // PHASE_H
+#endif

@@ -112,9 +112,9 @@ void Player::initializeStarterDeck() {
     ItemCard* dagger = new ItemCard("Dague", 0, Faction::None, "Item", daggerEffects);
     m_deck.addCard(dagger);
 
-    // 1 Rubis (valeur de Santé = 2, coût = 0)
+    // 1 Rubis (valeur d'Or = 2, coût = 0)
     std::vector<Effect*> rubyEffects;
-    rubyEffects.push_back(new GoldEffect(2)); // Effet : ajouter 2 Santé (corrigé de AttackEffect)
+    rubyEffects.push_back(new GoldEffect(2)); // Effet : ajouter 2 Gold
     ItemCard* ruby = new ItemCard("Rubis", 0, Faction::None, "Item", rubyEffects);
     m_deck.addCard(ruby);
 

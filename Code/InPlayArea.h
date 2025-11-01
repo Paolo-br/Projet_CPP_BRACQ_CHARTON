@@ -4,8 +4,8 @@
 #include <list>
 #include <iostream>
 #include <vector>
-#include "Card.h"
-#include "ChampionCard.h"
+#include "CardsType/Card.h"
+#include "CardsType/ChampionCard.h"
 
 class InPlayArea {
 private:
@@ -20,6 +20,8 @@ public:
     // Gestion des cartes normales
     void add(Card* card);
     void clear();
+    // Vider la liste des cartes (sans delete)
+    void removeAllCardsNoDelete();
     std::vector<Card*>& getCards();
     
     // Gestion des Champions

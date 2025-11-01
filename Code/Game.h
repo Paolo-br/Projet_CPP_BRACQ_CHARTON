@@ -3,22 +3,22 @@
 
 #include <vector>
 #include "Player.h"
-#include "Market.h"
+#include "Cards/Market.h"
 #include "Turn.h"
-#include "GameSettings.h"
-
+#include "GodMode.h"
 
 
 class Game {
     std::vector<Player> m_players;
     Market m_market;
-    GameSettings m_settings;
+    // GameSettings removed — no longer used
     Turn m_currentTurn;
     int m_currentPlayerIndex;
     bool m_gameStarted;
     bool m_gameEnded;
     bool m_mainPhaseActive;
-    
+    GodMode m_godMode;
+
 public:
     Game();
 
@@ -48,12 +48,13 @@ public:
     // Getters
     std::vector<Player>& getPlayers();
     Market& getMarket();
-    GameSettings& getSettings();
+    // GameSettings accessor removed
     Turn& getCurrentTurn();
     Player& getCurrentPlayer();
     Player& getNextPlayer();
     bool isGameOver() const;
     bool isMainPhaseActive() const { return m_mainPhaseActive; }
+    GodMode& getGodMode() { return m_godMode; }
 
     // Méthodes pour l'interaction joueur
     void playCardFromHand(int handIndex);
@@ -63,6 +64,11 @@ public:
     void attackChampion(int targetPlayerIndex, const std::string& championName);
     void useAllyAbility(const std::string& cardName);
     void sacrificeCard(const std::string& cardName);
+
+    // Sauvegarde/Chargement
+    void saveAndQuit(int slotNumber);
+    bool requestSave();
+    void markAsStarted(); 
 
     private:
     // Phases du tour
@@ -75,7 +81,7 @@ public:
     Player* getWinner() const;
     void displayGameState() const;
 
-    // Méthodes helper pour la phase principale
+    // Méthodes pour la phase principale
     void displayMainPhaseOptions();
     void handleMainPhaseChoice(int choice);
     void playCardsPhase();

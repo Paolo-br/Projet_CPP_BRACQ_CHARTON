@@ -4,10 +4,10 @@
 #include <iostream>
 #include <string>
 #include <list>
-#include "Deck.h"
-#include "Card.h"
-#include "Hand.h"
-#include "DiscardPile.h"
+#include "Cards/Deck.h"
+#include "CardsType/Card.h"
+#include "Cards/Hand.h"
+#include "Cards/DiscardPile.h"
 #include "InPlayArea.h"
 
 

@@ -42,6 +42,8 @@ public:
     int getGoldReserve() const;
     int getCombatReserve() const;
     void spendGold(int amount);
+    void setGoldReserve(int amount);
+    void setCombatReserve(int amount);
     void spendCombat(int amount);
     void clearReserves();
     

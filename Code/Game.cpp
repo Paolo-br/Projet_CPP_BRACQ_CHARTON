@@ -1,12 +1,12 @@
 #include "Game.h"
 #include "Player.h"
-#include "Market.h"
+#include "Cards/Market.h"
 #include "Turn.h"
-#include "GameSettings.h"
-#include "Card.h"
-#include "ActionCard.h"
-#include "ItemCard.h"
-#include "ChampionCard.h"
+#include "CardsType/Card.h"
+#include "CardsType/ActionCard.h"
+#include "CardsType/ItemCard.h"
+#include "CardsType/ChampionCard.h"
+#include "SaveManager.h"
 
 #include <iostream>
 #include <limits>
@@ -22,7 +22,7 @@ namespace {
             if (std::cin.fail()) {
                 std::cin.clear();
                 std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                std::cout << "❌ Entrée invalide ! Veuillez entrer un nombre." << std::endl;
+                std::cout << "Entrée invalide ! Veuillez entrer un nombre." << std::endl;
                 continue;
             }
             
@@ -31,12 +31,20 @@ namespace {
             return choice;
         }
     }
+
+    std::string readChoiceString(const std::string& prompt = "Votre choix: ") {
+        std::string choice;
+        std::cout << prompt;
+        std::cin >> choice;
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        return choice;
+    }
 }
 
 // Constructeur
 Game::Game() 
-    : m_players(), m_market(), m_settings(), m_currentTurn(),
-      m_currentPlayerIndex(0), m_gameStarted(false), m_gameEnded(false) {}
+        : m_players(), m_market(), m_currentTurn(),
+            m_currentPlayerIndex(0), m_gameStarted(false), m_gameEnded(false) {}
 
 // 1. Destructeur
 Game::~Game() {
@@ -45,20 +53,19 @@ Game::~Game() {
 
 // 2. Constructeur copie
 Game::Game(const Game& other)
-    : m_players(other.m_players), m_market(other.m_market),
-      m_settings(other.m_settings), m_currentTurn(other.m_currentTurn),
-      m_currentPlayerIndex(other.m_currentPlayerIndex),
-      m_gameStarted(other.m_gameStarted), m_gameEnded(other.m_gameEnded) {
+        : m_players(other.m_players), m_market(other.m_market),
+            m_currentTurn(other.m_currentTurn),
+            m_currentPlayerIndex(other.m_currentPlayerIndex),
+            m_gameStarted(other.m_gameStarted), m_gameEnded(other.m_gameEnded) {
     std::cout << "Constructeur copie Game" << std::endl;
 }
 
 // 3. Opérateur affectation copie
 Game& Game::operator=(const Game& other) {
     if (this != &other) {
-        m_players = other.m_players;
-        m_market = other.m_market;
-        m_settings = other.m_settings;
-        m_currentTurn = other.m_currentTurn;
+    m_players = other.m_players;
+    m_market = other.m_market;
+    m_currentTurn = other.m_currentTurn;
         m_currentPlayerIndex = other.m_currentPlayerIndex;
         m_gameStarted = other.m_gameStarted;
         m_gameEnded = other.m_gameEnded;
@@ -69,13 +76,12 @@ Game& Game::operator=(const Game& other) {
 
 // 4. Constructeur déplacement
 Game::Game(Game&& other) noexcept
-    : m_players(std::move(other.m_players)),
-      m_market(std::move(other.m_market)),
-      m_settings(std::move(other.m_settings)),
-      m_currentTurn(std::move(other.m_currentTurn)),
-      m_currentPlayerIndex(other.m_currentPlayerIndex),
-      m_gameStarted(other.m_gameStarted),
-      m_gameEnded(other.m_gameEnded) {
+        : m_players(std::move(other.m_players)),
+            m_market(std::move(other.m_market)),
+            m_currentTurn(std::move(other.m_currentTurn)),
+            m_currentPlayerIndex(other.m_currentPlayerIndex),
+            m_gameStarted(other.m_gameStarted),
+            m_gameEnded(other.m_gameEnded) {
     other.m_currentPlayerIndex = 0;
     other.m_gameStarted = false;
     other.m_gameEnded = false;
@@ -85,10 +91,9 @@ Game::Game(Game&& other) noexcept
 // 5. Opérateur affectation déplacement
 Game& Game::operator=(Game&& other) noexcept {
     if (this != &other) {
-        m_players = std::move(other.m_players);
-        m_market = std::move(other.m_market);
-        m_settings = std::move(other.m_settings);
-        m_currentTurn = std::move(other.m_currentTurn);
+    m_players = std::move(other.m_players);
+    m_market = std::move(other.m_market);
+    m_currentTurn = std::move(other.m_currentTurn);
         m_currentPlayerIndex = other.m_currentPlayerIndex;
         m_gameStarted = other.m_gameStarted;
         m_gameEnded = other.m_gameEnded;
@@ -122,13 +127,11 @@ void Game::start() {
         return;
     }
 
-    // Initialisation des joueurs selon les règles
+    // Initialisation des joueurs 
     for (size_t i = 0; i < m_players.size(); ++i) {
         Player& player = m_players[i];
-        std::cout << "Initialisation de " << player.getName() << std::endl;
         player.setHealth(50); 
         player.initializeStarterDeck();  
-        // Distribution des mains de départ selon les règles
         if (i == 0) {
             // Premier joueur : 3 cartes
             player.drawCards(3);
@@ -136,26 +139,20 @@ void Game::start() {
             // Autres joueurs : 5 cartes
             player.drawCards(5);
         }
-        std::cout << "• " << player.getName() << " : " << player.getHealth() << " PV" << std::endl;
     }
 
     // Initialisation du marché
-    std::cout << "\nInitialisation du marché..." << std::endl;
     m_market.initializeBaseSet();
 
     // Premier tour
     m_gameStarted = true;
     m_currentPlayerIndex = 0;
-    m_currentTurn = Turn();  // Initialiser le tour (pas besoin de passer le joueur)
+    m_currentTurn = Turn(); 
     
     std::cout << "\nLa partie commence ! " << m_players[m_currentPlayerIndex].getName() << " joue en premier." << std::endl;
     std::cout << "==========================================" << std::endl;
     displayGameState();
 }
-
-
-
-
 
 
 
@@ -167,10 +164,11 @@ void Game::playTurn() {
     }
 
     Player& activePlayer = getCurrentPlayer();
-    Player& opponent = getNextPlayer(); // Récupère l'adversaire
+    Player& opponent = getNextPlayer();
     
-    // Définir l'adversaire pour ce tour (pour les effets qui ciblent l'adversaire)
-    m_currentTurn.setOpponent(&opponent);
+
+    m_currentTurn.setOpponent(&opponent); //utile pour certains effets
+    
     
     std::cout << "\n--- Tour du joueur : " << activePlayer.getName() << " ---" << std::endl;
     std::cout << "    (Adversaire: " << opponent.getName() << ")" << std::endl;
@@ -178,14 +176,17 @@ void Game::playTurn() {
     // PHASE 1 : Phase Principale
     std::cout << "\n--- PHASE PRINCIPALE ---" << std::endl;
     mainPhase();
+    m_currentTurn.nextPhase(); // Passer à la phase DISCARD
 
     // PHASE 2 : Phase de Défausse
     std::cout << "\n--- PHASE DE DÉFAUSSE ---" << std::endl;
     discardPhase();
+    m_currentTurn.nextPhase(); // Passer à la phase DRAW
 
     // PHASE 3 : Phase de Pioche
     std::cout << "\n--- PHASE DE PIOCHE ---" << std::endl;
     drawPhase();
+    m_currentTurn.nextPhase(); // Retour à la phase MAIN pour le prochain tour
 
     // Vérifier la fin de partie
     if (checkEndCondition()) {
@@ -201,16 +202,15 @@ void Game::playTurn() {
 
 
 
+
 void Game::mainPhase() {
     Player& activePlayer = getCurrentPlayer();
     m_mainPhaseActive = true;
 
-    //Mon petit rappel car j'ai aucune mémoire:
-    // Le joueur peut effectuer ces actions dans n'importe quel ordre :
-    // 1. Jouer des cartes de sa main
-    // 2. Activer des capacités de ses cartes en jeu
-    // 3. Utiliser l'Or pour acquérir des cartes
-    // 4. Utiliser le Combat pour attaquer
+    // Vérification de sécurité : on devrait être en Phase MAIN
+    if (m_currentTurn.getPhase() != Phase::MAIN) {
+        std::cerr << "ERREUR : mainPhase() appelée alors que la phase actuelle n'est pas MAIN!" << std::endl;
+    }
     
  std::cout << "\nPHASE PRINCIPALE - " << activePlayer.getName() << std::endl;
     std::cout << "Ressources disponibles: " << m_currentTurn.getGoldReserve() << " d'Or et " 
@@ -220,14 +220,38 @@ void Game::mainPhase() {
     while (m_mainPhaseActive && !activePlayer.isEliminated()) {
         displayMainPhaseOptions();
         
-        int choice = readChoice("Choisissez une action: ");
+        std::string choiceStr = readChoiceString("Choisissez une action: ");
         
-        if (choice == 0) {
-            // Fin de la phase principale
-            m_mainPhaseActive = false;
-            std::cout << "\n✓ Fin de la phase principale." << std::endl;
-        } else {
-            handleMainPhaseChoice(choice);
+        // Vérifier si c'est la commande de sauvegarde
+        if (choiceStr == "S" || choiceStr == "s") {
+            if (requestSave()) {
+                m_mainPhaseActive = false;
+                m_gameEnded = true;
+                return;
+            }
+            continue;
+        }
+        
+        // Vérifier si c'est la commande God Mode
+        if (choiceStr == "G" || choiceStr == "g") {
+            m_godMode.displayMenu(m_players, m_market, m_currentTurn);
+            continue;
+        }
+        
+        // Sinon, c'est un nombre
+        try {
+            int choice = std::stoi(choiceStr);
+            
+            if (choice == 0) {
+                // Fin de la phase principale
+                m_mainPhaseActive = false;
+                std::cout << "\n✓ Fin de la phase principale." << std::endl;
+            } else {
+                handleMainPhaseChoice(choice);
+            }
+        } catch (const std::exception&) {
+            std::cout << "❌ Choix invalide!" << std::endl;
+            continue;
         }
         
         // Vérifier si un joueur a été éliminé
@@ -247,7 +271,7 @@ void Game::displayMainPhaseOptions() {
     std::cout << "╚═══════════════════════════════════════════════╝" << std::endl;
     
     // État actuel
-    std::cout << "📊 État: ";
+    std::cout << "État: ";
     std::cout << "Main: " << activePlayer.getHand().size() << " | ";
     std::cout << "💰: " << m_currentTurn.getGoldReserve() << " | ";
     std::cout << "⚔️: " << m_currentTurn.getCombatReserve() << " | ";
@@ -255,7 +279,7 @@ void Game::displayMainPhaseOptions() {
     std::cout << "───────────────────────────────────────────────" << std::endl;
     
     // Options
-    std::cout << "[1] 🎴 Jouer une carte de ma main";
+    std::cout << "[1] Jouer une carte de ma main";
     if (activePlayer.getHand().isEmpty()) {
         std::cout << " (Vide)";
     } else {
@@ -263,16 +287,16 @@ void Game::displayMainPhaseOptions() {
     }
     std::cout << std::endl;
     
-    std::cout << "[2] ⚡ Activer un Champion";
+    std::cout << "[2] Activer un Champion";
     if (playArea.getChampionCount() == 0) {
         std::cout << " (Aucun)";
     }
     std::cout << std::endl;
     
-    std::cout << "[3] 🤝 Utiliser une capacité Alliée" << std::endl;
-    std::cout << "[4] 💀 Sacrifier une carte" << std::endl;
+    std::cout << "[3] Utiliser une capacité Alliée" << std::endl;
+    std::cout << "[4] Sacrifier une carte" << std::endl;
     
-    std::cout << "[5] 🛒 Acheter au marché";
+    std::cout << "[5] Acheter au marché";
     if (m_currentTurn.getGoldReserve() == 0) {
         std::cout << " (Pas d'Or)";
     } else {
@@ -280,7 +304,7 @@ void Game::displayMainPhaseOptions() {
     }
     std::cout << std::endl;
     
-    std::cout << "[6] ⚔️  Attaquer";
+    std::cout << "[6] Attaquer";
     if (m_currentTurn.getCombatReserve() == 0) {
         std::cout << " (Pas de Combat)";
     } else {
@@ -288,11 +312,17 @@ void Game::displayMainPhaseOptions() {
     }
     std::cout << std::endl;
     
-    std::cout << "[7] 📚 Voir ma défausse (" << activePlayer.getDiscardPile().size() << " cartes)" << std::endl;
-    std::cout << "[8] 💀 Voir ma Zone de Sacrifice (" << activePlayer.getSacrificeZone().size() << " cartes)" << std::endl;
-    std::cout << "[9] 👁️  Voir la défausse d'un adversaire" << std::endl;
+    std::cout << "[7] Voir ma défausse (" << activePlayer.getDiscardPile().size() << " cartes)" << std::endl;
+    std::cout << "[8] Voir ma Zone de Sacrifice (" << activePlayer.getSacrificeZone().size() << " cartes)" << std::endl;
+    std::cout << "[9] Voir la défausse d'un adversaire" << std::endl;
     
     std::cout << "───────────────────────────────────────────────" << std::endl;
+    std::cout << "[G] God Mode";
+    if (m_godMode.isActive()) {
+        std::cout << " (ACTIF)";
+    }
+    std::cout << std::endl;
+    std::cout << "[S] Sauvegarder et quitter" << std::endl;
     std::cout << "[0] Terminer mon tour" << std::endl;
     std::cout << "═══════════════════════════════════════════════" << std::endl;
 }
@@ -306,10 +336,10 @@ void Game::handleMainPhaseChoice(int choice) {
             activateAbilitiesPhase();
             break;
         case 3:
-            useAllyAbility("");  // Sera demandé interactivement
+            useAllyAbility("");  
             break;
         case 4:
-            sacrificeCard("");  // Sera demandé interactivement
+            sacrificeCard(""); 
             break;
         case 5:
             acquireCardsPhase();
@@ -333,6 +363,13 @@ void Game::handleMainPhaseChoice(int choice) {
 }
 
 void Game::playCardFromHand(int handIndex) {
+
+    // Vérifier qu'on est bien en Phase Principale
+    if (m_currentTurn.getPhase() != Phase::MAIN) {
+        std::cout << "Vous ne pouvez jouer des cartes que pendant la Phase Principale !" << std::endl;
+        return;
+    }
+
     Player& activePlayer = getCurrentPlayer();
     Hand& hand = activePlayer.getHand();
 
@@ -359,7 +396,7 @@ void Game::playCardFromHand(int handIndex) {
         if (!wasAlreadyPlayed) {
             std::cout << "  → Première carte " << factionToString(cardFaction) << " jouée ce tour" << std::endl;
         } else if (!m_currentTurn.hasAllyAbilityBeenTriggered(cardFaction)) {
-            std::cout << "  → 🤝 DÉCLENCHEMENT DES CAPACITÉS ALLIÉES " << factionToString(cardFaction) << "!" << std::endl;
+            std::cout << "  → DÉCLENCHEMENT DES CAPACITÉS ALLIÉES " << factionToString(cardFaction) << "!" << std::endl;
             triggerAllyAbilities(cardFaction);
             // Marquer que les capacités Allié de cette faction ont été déclenchées
             m_currentTurn.markAllyAbilityTriggered(cardFaction);
@@ -371,37 +408,48 @@ void Game::playCardFromHand(int handIndex) {
     // Appliquer les effets principaux de la carte
     card->executeEffects(activePlayer, m_currentTurn);
 
-    // Gérer le type de carte avec dynamic_cast
+    // Gérer le type de carte
     if (auto* actionCard = dynamic_cast<ActionCard*>(card)) {
-        // C'est une Action - va en zone de jeu temporaire
+        // C'est une Action = va en zone de jeu temporaire
         activePlayer.addCardToPlayArea(actionCard);
-        std::cout << "→ " << actionCard->getName() << " (Action) entre en jeu" << std::endl;
-        
+        // Déclencher la PrimaryAbility si elle existe
+        for (auto& ability : actionCard->getAbilities()) {
+            if (ability && ability->getName() == "PrimaryAbility") {
+                ability->trigger(activePlayer, m_currentTurn);
+            }
+        }
+        std::cout << "→ " << actionCard->getName() << " entre en jeu" << std::endl;
+
         // Vérifier les capacités Alliées
         if (actionCard->hasAllyAbility()) {
-            std::cout << "  💡 Cette carte a une capacité Alliée" << std::endl;
+            std::cout << " Cette carte a une capacité Alliée" << std::endl;
         }
 
     } else if (auto* itemCard = dynamic_cast<ItemCard*>(card)) {
-        // C'est un Objet - va en zone de jeu temporaire
+        // C'est un Objet = va en zone de jeu temporaire
         activePlayer.addCardToPlayArea(itemCard);
-        std::cout << itemCard->getName() << "entre en jeu" << std::endl;
+        // Déclencher la PrimaryAbility si elle existe
+        for (auto& ability : itemCard->getAbilities()) {
+            if (ability && ability->getName() == "PrimaryAbility") {
+                ability->trigger(activePlayer, m_currentTurn);
+            }
+        }
+        std::cout << itemCard->getName() << " entre en jeu" << std::endl;
 
     } else if (auto* championCard = dynamic_cast<ChampionCard*>(card)) {
-        // C'est un Champion - reste en jeu
+        // C'est un Champion = reste en jeu
         championCard->play(activePlayer, getNextPlayer());
         activePlayer.addChampionToPlayArea(*championCard);
         
         // Vérifier les capacités
         if (championCard->hasActivateAbility()) {
-            std::cout << "  ⚡ Capacité d'activation disponible (activable ce tour)" << std::endl;
+            std::cout << "Capacité d'activation disponible (activable ce tour)" << std::endl;
         }
         if (championCard->hasAllyAbility()) {
-            std::cout << "  💡 Capacité Alliée disponible" << std::endl;
+            std::cout << "Capacité Alliée disponible" << std::endl;
         }
 
     } else {
-        // Type inconnu (ne devrait pas arriver si toutes les cartes sont bien typées)
         std::cout << "Type de carte inconnu: " << card->getName() << std::endl;
     }
 
@@ -427,13 +475,10 @@ void Game::playCardsPhase() {
     std::cout << "\n╔═══════════════════════════════════════════════╗" << std::endl;
     std::cout << "║           VOTRE MAIN                          ║" << std::endl;
     std::cout << "╚═══════════════════════════════════════════════╝" << std::endl;
-    
+    Utils::clearScreen();
 
-    // Afficher avec les fonctions de raph
-    for (size_t i = 0; i < hand.size(); ++i) {
-        Card* card = hand.getCardAt(i);        
-        std::cout <<card->getName()<< std::endl;
-    }
+    // Affiche les cartes
+    Utils::displayAllCards(hand.getCards(),2,0);
      
     std::cout << "[0] ← Retour" << std::endl;
     
@@ -442,7 +487,7 @@ void Game::playCardsPhase() {
     if (choice > 0 && choice <= static_cast<int>(hand.size())) {
         playCardFromHand(choice - 1);
     } else if (choice != 0) {
-        std::cout << "❌ Choix invalide!" << std::endl;
+        std::cout << "Choix invalide!" << std::endl;
     }
 }
 
@@ -450,6 +495,13 @@ void Game::playCardsPhase() {
 
 
 void Game::combatPhase() {
+
+    // Vérifier qu'on est bien en Phase Principale
+    if (m_currentTurn.getPhase() != Phase::MAIN) {
+        std::cout << "Vous ne pouvez attaquer que pendant la Phase Principale !" << std::endl;
+        return;
+    }
+
     if (m_currentTurn.getCombatReserve() <= 0) {
         std::cout << "Vous n'avez pas de Combat à utiliser!" << std::endl;
         return;
@@ -475,16 +527,15 @@ void Game::combatPhase() {
                 std::cout << " [PROTÉGÉ]";
             }
             std::cout << std::endl;
-
+            Utils::clearScreen();
             // Afficher les Champions de ce joueur avec les codes de raph
             std::vector<ChampionCard>& champions = target.getPlayArea().getChampions();
-            if (!champions.empty()) {
-                std::cout << "  Champions:" << std::endl;
-                for (size_t j = 0; j < champions.size(); ++j) {
-                    ChampionCard& champion = champions[j];
-                    std::cout << champion.getName() << std::endl;
-                }
+            //Car la fonction display prend un std::vector<Card*>
+            std::vector<Card*> cards;
+            for (auto& championCard : champions) {
+                cards.push_back(static_cast<Card*>(&championCard));
             }
+            Utils::displayAllCards(cards,2,0);
         }
     }
     
@@ -544,23 +595,32 @@ void Game::combatPhase() {
         std::cout << "Vous devez d'abord assommer les Gardes!\n" << std::endl;
     }
     
-    // Afficher les champions attaquables
+
+    // AFFICHAGE — Utiliser le renderer Raphael pour montrer les champions attaquables
     std::cout << "Choisissez un Champion à attaquer:" << std::endl;
+    std::vector<Card*> attackableCards;
+    std::vector<int> attackableIndexMap; // map from displayed index -> champions index
     for (size_t i = 0; i < champions.size(); ++i) {
         ChampionCard& champion = champions[i];
-        if (!champion.isStunned()) {
-            // Si des Gardes existent, afficher les Gardes
-            if (hasGuard && !champion.isGuard()) {
-                continue; // Sauter les non-Gardes
-            }
-            
-            std::cout << (i + 1) << ". " << champion.getName()
-                      << " (" << champion.getRemainingDefense() << " Def)";
-            if (champion.isGuard()) {
-                std::cout << " [GARDE]";
-            }
-            std::cout << std::endl;
-        }
+        if (champion.isStunned()) continue;
+        if (hasGuard && !champion.isGuard()) continue;
+        attackableCards.push_back(static_cast<Card*>(&champion));
+        attackableIndexMap.push_back(static_cast<int>(i));
+    }
+    if (attackableCards.empty()) {
+        std::cout << "Aucun champion attaquable." << std::endl;
+        return;
+    }
+    Utils::clearScreen();
+    Utils::displayAllCards(attackableCards, 2, 0);
+
+    // Afficher aussi la liste numérotée (pour saisie facile)
+    for (size_t k = 0; k < attackableIndexMap.size(); ++k) {
+        ChampionCard& champ = champions[attackableIndexMap[k]];
+        std::cout << (k + 1) << ". " << champ.getName()
+                  << " (" << champ.getRemainingDefense() << " Def)";
+        if (champ.isGuard()) std::cout << " [GARDE]";
+        std::cout << std::endl;
     }
     
     // Option d'attaquer le joueur si pas de Garde
@@ -578,9 +638,10 @@ void Game::combatPhase() {
     if (targetChoice == 0) return;
     
     // Attaquer un Champion
-    if (targetChoice > 0 && targetChoice <= static_cast<int>(champions.size())) {
-        ChampionCard& targetChampion = champions[targetChoice - 1];
-        
+    if (targetChoice > 0 && targetChoice <= static_cast<int>(attackableIndexMap.size())) {
+        int mappedIndex = attackableIndexMap[targetChoice - 1];
+        ChampionCard& targetChampion = champions[mappedIndex];
+
         if (targetChampion.isStunned()) {
             std::cout << "Ce Champion est déjà assommé!" << std::endl;
             return;
@@ -588,29 +649,29 @@ void Game::combatPhase() {
         
         // Si des Gardes existent, on ne peut cibler que des Gardes
         if (hasGuard && !targetChampion.isGuard()) {
-            std::cout << "❌ Vous ne pouvez pas cibler " << targetChampion.getName() 
+            std::cout << "Vous ne pouvez pas cibler " << targetChampion.getName() 
                       << " ! Des Champions Gardes protègent les autres champions." << std::endl;
             std::cout << "Vous devez d'abord assommer tous les Gardes!" << std::endl;
             return;
         }
         
         int combatUsed;
-        std::cout << "\nAttaque sur " << targetChampion.getName() 
+        std::cout << "\nAttaque sur " << targetChampion.getName()
                   << " (Def: " << targetChampion.getRemainingDefense() << ")" << std::endl;
-        std::cout << "Combien de Combat utiliser? (Max: " 
+        std::cout << "Combien de Combat utiliser? (Max: "
                   << m_currentTurn.getCombatReserve() << "): ";
         std::cin >> combatUsed;
-        
+
         if (combatUsed > 0 && combatUsed <= m_currentTurn.getCombatReserve()) {
             m_currentTurn.spendCombat(combatUsed);
             targetChampion.takeDamage(combatUsed);
-            
+
             if (targetChampion.isStunned()) {
-                std::cout << targetChampion.getName() 
+                std::cout << targetChampion.getName()
                           << " est ASSOMMÉ et va en défausse!" << std::endl;
                 targetPlayer.stunChampion(targetChampion);
             } else {
-                std::cout << targetChampion.getName() 
+                std::cout << targetChampion.getName()
                           << " encaisse " << combatUsed << " dégâts" << std::endl;
             }
         } else {
@@ -624,7 +685,7 @@ void Game::viewDiscardPile() {
     DiscardPile& discard = activePlayer.getDiscardPile();
     
     std::cout << "\n╔═══════════════════════════════════════════════╗" << std::endl;
-    std::cout << "║          📚 PILE DE DÉFAUSSE                  ║" << std::endl;
+    std::cout << "║            PILE DE DÉFAUSSE                   ║" << std::endl;
     std::cout << "╚═══════════════════════════════════════════════╝" << std::endl;
     std::cout << "Joueur: " << activePlayer.getName() << std::endl;
     std::cout << "Nombre de cartes: " << discard.size() << std::endl;
@@ -635,21 +696,8 @@ void Game::viewDiscardPile() {
     } else {
         std::cout << "\nCartes dans la défausse:" << std::endl;
         std::vector<Card*> cards = discard.getCards();
-        for (size_t i = 0; i < cards.size(); ++i) {
-            Card* card = cards[i];
-            if (card) {
-                std::cout << "  [" << (i + 1) << "] " << card->getName();
-                
-                // Afficher la faction si elle existe
-                if (card->getFaction() != Faction::None) {
-                    std::cout << " (" << factionToString(card->getFaction()) << ")";
-                }
-                
-                // Afficher le type de carte
-                std::cout << " - " << card->getType();
-                std::cout << std::endl;
-            }
-        }
+        Utils::clearScreen();
+        Utils::displayAllCards(cards,0,0);
     }
     
     std::cout << "───────────────────────────────────────────────" << std::endl;
@@ -660,7 +708,9 @@ void Game::viewDiscardPile() {
 
 void Game::viewSacrificeZone() {
     Player& activePlayer = getCurrentPlayer();
-    activePlayer.viewSacrificeZone();
+    std::vector<Card*> sacrificeCards = activePlayer.getSacrificeZone();
+    Utils::clearScreen();
+    Utils::displayAllCards(sacrificeCards,0,0);
     
     std::cout << "\nAppuyez sur [Entrée] pour revenir au menu..." << std::endl;
     std::cin.ignore();
@@ -675,13 +725,12 @@ void Game::viewOpponentDiscardPile() {
     
     std::vector<int> opponentIndices;
     int displayIndex = 1;
-    
-    // modifier avec affichage raph
+
     for (size_t i = 0; i < m_players.size(); ++i) {
         if (static_cast<int>(i) != m_currentPlayerIndex) {
             Player& opponent = m_players[i];
             std::cout << "[" << displayIndex << "] " << opponent.getName()
-                      << " - Défausse: " << opponent.getDiscardPile().size() << " cartes";
+                       << " - Défausse: " << opponent.getDiscardPile().size() << " cartes";
             if (opponent.isEliminated()) {
                 std::cout << " (ÉLIMINÉ)";
             }
@@ -704,7 +753,7 @@ void Game::viewOpponentDiscardPile() {
         DiscardPile& discard = selectedOpponent.getDiscardPile();
         
         std::cout << "\n╔═══════════════════════════════════════════════╗" << std::endl;
-        std::cout << "║          📚 PILE DE DÉFAUSSE                  ║" << std::endl;
+        std::cout << "║            PILE DE DÉFAUSSE                  ║" << std::endl;
         std::cout << "╚═══════════════════════════════════════════════╝" << std::endl;
         std::cout << "Joueur: " << selectedOpponent.getName() << std::endl;
         std::cout << "Nombre de cartes: " << discard.size() << std::endl;
@@ -715,21 +764,8 @@ void Game::viewOpponentDiscardPile() {
         } else {
             std::cout << "\nCartes dans la défausse:" << std::endl;
             std::vector<Card*> cards = discard.getCards();
-            for (size_t i = 0; i < cards.size(); ++i) {
-                Card* card = cards[i];
-                if (card) {
-                    std::cout << "  [" << (i + 1) << "] " << card->getName();
-                    
-                    // Afficher la faction si elle existe
-                    if (card->getFaction() != Faction::None) {
-                        std::cout << " (" << factionToString(card->getFaction()) << ")";
-                    }
-                    
-                    // Afficher le type de carte
-                    std::cout << " - " << card->getType();
-                    std::cout << std::endl;
-                }
-            }
+            Utils::clearScreen();
+            Utils::displayAllCards(cards,0,0);
         }
         
         std::cout << "───────────────────────────────────────────────" << std::endl;
@@ -749,7 +785,10 @@ void Game::acquireCardsPhase() {
     
     std::cout << "\n--- ACHAT DE CARTES ---" << std::endl;
     std::cout << "Or disponible: " << m_currentTurn.getGoldReserve() << std::endl;
-    m_market.displayMarket();
+
+    std::vector<Card*> marketCards = m_market.getVisibleCards();
+    Utils::clearScreen();
+    Utils::displayAllCards(marketCards,0,0);
     
     std::cout << "0. Retour" << std::endl;
     
@@ -761,6 +800,13 @@ void Game::acquireCardsPhase() {
 }
 
 void Game::acquireCardFromMarket(int marketIndex) {
+
+    // Vérifier qu'on est bien en Phase Principale
+    if (m_currentTurn.getPhase() != Phase::MAIN) {
+        std::cout << "Vous ne pouvez acquérir des cartes que pendant la Phase Principale !" << std::endl;
+        return;
+    }
+
     Player& activePlayer = getCurrentPlayer();
     auto availableCards = m_market.getVisibleCards();
 
@@ -788,11 +834,16 @@ void Game::acquireCardFromMarket(int marketIndex) {
 void Game::discardPhase() {
     Player& activePlayer = getCurrentPlayer();
     
+    // Vérification de sécurité : on devrait être en Phase DISCARD
+    if (m_currentTurn.getPhase() != Phase::DISCARD) {
+        std::cerr << "ERREUR : discardPhase() appelée alors que la phase actuelle n'est pas DISCARD!" << std::endl;
+    }
+
     std::cout << "\n" << activePlayer.getName() << " - Phase de Défausse:" << std::endl;
     
     // 1. Perdre tout l'Or et Combat restants
     if (m_currentTurn.getGoldReserve() > 0 || m_currentTurn.getCombatReserve() > 0) {
-        std::cout << "  • Perte de " << m_currentTurn.getGoldReserve() << " Or et " 
+        std::cout << "Perte de " << m_currentTurn.getGoldReserve() << " Or et " 
                   << m_currentTurn.getCombatReserve() << " Combat" << std::endl;
         m_currentTurn.clearReserves();
     }
@@ -802,26 +853,28 @@ void Game::discardPhase() {
     std::vector<Card*>& cards = playArea.getCards();
     
     if (!cards.empty()) {
-        std::cout << "  • Défausse de " << cards.size() << " carte(s) en jeu" << std::endl;
+        std::cout << "Défausse de " << cards.size() << " carte(s) en jeu" << std::endl;
         for (Card* card : cards) {
             if (card) {
+                // Transférer l'ownership de la carte vers la défausse du joueur
                 activePlayer.discardCard(card);
             }
         }
-        playArea.clear(); // Vider la zone de jeu (sauf Champions)
+        // Comme les pointeurs ont été transférés, vider le vecteur sans delete
+        playArea.removeAllCardsNoDelete(); // Vider la zone de jeu (sauf Champions)
     }
     
     // 3. Défausser toute la main
     if (!activePlayer.getHand().isEmpty()) {
         size_t handSize = activePlayer.getHand().size();
-        std::cout << "  • Défausse de la main (" << handSize << " carte(s))" << std::endl;
+        std::cout << "Défausse de la main (" << handSize << " carte(s))" << std::endl;
         activePlayer.discardHand();
     }
     
     // 4. Mobiliser tous les Champions
     std::vector<ChampionCard>& champions = playArea.getChampions();
     if (!champions.empty()) {
-        std::cout << "  • Mobilisation de " << champions.size() << " Champion(s)" << std::endl;
+        std::cout << "Mobilisation de " << champions.size() << " Champion(s)" << std::endl;
         activePlayer.mobilizeChampions();
     }
     
@@ -835,6 +888,11 @@ void Game::discardPhase() {
 void Game::drawPhase() {
     Player& activePlayer = getCurrentPlayer();
     
+    // Vérification de sécurité : on devrait être en Phase DRAW
+    if (m_currentTurn.getPhase() != Phase::DRAW) {
+        std::cerr << "ERREUR : drawPhase() appelée alors que la phase actuelle n'est pas DRAW!" << std::endl;
+    }
+
     std::cout << "\n" << activePlayer.getName() << " - Phase de Pioche:" << std::endl;
     
     // Piocher 5 cartes
@@ -876,7 +934,7 @@ void Game::endGame() {
     Player* winner = getWinner();
     if (winner) {
         std::cout << "VAINQUEUR : " << winner->getName() 
-                  << " avec " << winner->getHealth() << " PV ! 🎉" << std::endl;
+                  << " avec " << winner->getHealth() << " PV !" << std::endl;
     } else {
         std::cout << "Match nul !" << std::endl;
     }
@@ -919,6 +977,13 @@ void Game::displayGameState() const {
 
 // Activation des capacités de Champions
 void Game::activateAbilitiesPhase() {
+
+    // Vérifier qu'on est bien en Phase Principale
+    if (m_currentTurn.getPhase() != Phase::MAIN) {
+        std::cout << "Vous ne pouvez activer des capacités que pendant la Phase Principale !" << std::endl;
+        return;
+    }
+
     Player& activePlayer = getCurrentPlayer();
     std::vector<ChampionCard>& champions = activePlayer.getPlayArea().getChampions();
     
@@ -930,7 +995,10 @@ void Game::activateAbilitiesPhase() {
     std::cout << "\n--- ACTIVER UN CHAMPION ---" << std::endl;
     bool hasReadyChampion = false;
     
-    // Afficher tous les champions avec leur état
+    // 
+    // AFFICHAGE
+    //
+    //Afficher tous les champions avec leur état
     for (size_t i = 0; i < champions.size(); ++i) {
         ChampionCard& champion = champions[i];
         std::cout << "[" << (i + 1) << "] " << champion.getName() 
@@ -976,7 +1044,7 @@ void Game::triggerAllyAbilities(Faction faction) {
     InPlayArea& playArea = activePlayer.getPlayArea();
     
     std::cout << "\n╔═══════════════════════════════════════════════╗" << std::endl;
-    std::cout << "║  🤝 DÉCLENCHEMENT CAPACITÉS ALLIÉES           ║" << std::endl;
+    std::cout << "║    DÉCLENCHEMENT CAPACITÉS ALLIÉES           ║" << std::endl;
     std::cout << "║     " << factionToString(faction) << std::string(40 - factionToString(faction).length(), ' ') << "║" << std::endl;
     std::cout << "╚═══════════════════════════════════════════════╝" << std::endl;
     
@@ -1062,8 +1130,14 @@ void Game::checkAndTriggerAllyAbilities() {
 void Game::useAllyAbility(const std::string& cardName) {
     (void)cardName;  // Pour éviter le warning
     
+    // Vérifier qu'on est bien en Phase Principale
+    if (m_currentTurn.getPhase() != Phase::MAIN) {
+        std::cout << "Vous ne pouvez utiliser des capacités Alliées que pendant la Phase Principale !" << std::endl;
+        return;
+    }
+    
     std::cout << "\n--- ACTIVATION MANUELLE CAPACITÉS ALLIÉES ---" << std::endl;
-    std::cout << "⚠️  Note: Les capacités Alliées se déclenchent automatiquement" << std::endl;
+    std::cout << " Les capacités Alliées se déclenchent automatiquement" << std::endl;
     std::cout << "   quand vous jouez une 2ème carte de la même faction." << std::endl;
     
     // Afficher les factions déjà jouées
@@ -1072,7 +1146,7 @@ void Game::useAllyAbility(const std::string& cardName) {
     for (int f = static_cast<int>(Faction::Imperial); f <= static_cast<int>(Faction::Sauvage); ++f) {
         Faction faction = static_cast<Faction>(f);
         if (m_currentTurn.hasFactionBeenPlayed(faction)) {
-            std::cout << "  ✓ " << factionToString(faction) << std::endl;
+            std::cout << factionToString(faction) << std::endl;
             foundFaction = true;
         }
     }
@@ -1089,6 +1163,13 @@ void Game::useAllyAbility(const std::string& cardName) {
 // Sacrifier une carte
 void Game::sacrificeCard(const std::string& cardName) {
     (void)cardName;  // Pour éviter le warning
+
+    // Vérifier qu'on est bien en Phase Principale
+    if (m_currentTurn.getPhase() != Phase::MAIN) {
+        std::cout << "Vous ne pouvez sacrifier des cartes que pendant la Phase Principale !" << std::endl;
+        return;
+    }
+
     Player& activePlayer = getCurrentPlayer();
     
     std::cout << "\n--- SACRIFIER UNE CARTE ---" << std::endl;
@@ -1103,7 +1184,20 @@ void Game::sacrificeCard(const std::string& cardName) {
     }
     
     std::cout << "Cartes sacrifiables:" << std::endl;
-    
+
+    // AFFICHAGE : afficher les Actions/Objets puis les Champions via Raphael
+    if (!cardsInPlay.empty()) {
+        std::vector<Card*> cardsToShow = cardsInPlay; // copy vector<Card*>
+        Utils::clearScreen();
+        Utils::displayAllCards(cardsToShow, 2, 0);
+    }
+    if (!champions.empty()) {
+        std::vector<Card*> champsToShow;
+        for (auto& c : champions) champsToShow.push_back(const_cast<ChampionCard*>(&c));
+        Utils::displayAllCards(champsToShow, 10, 0);
+    }
+
+    // Affichage numéroté (maintenir la logique de sélection)
     int index = 1;
     for (Card* card : cardsInPlay) {
         std::cout << index++ << ". " << card->getName();
@@ -1112,7 +1206,7 @@ void Game::sacrificeCard(const std::string& cardName) {
         }
         std::cout << std::endl;
     }
-    
+
     for (auto& champion : champions) {
         std::cout << index++ << ". " << champion.getName() << " (Champion)";
         if (champion.hasSacrificeAbility()) {
@@ -1205,10 +1299,64 @@ bool Game::canTargetChampion(const Player& target, const ChampionCard& champion)
     return !champion.isStunned();
 }
 
+// Sauvegarde et chargement
+bool Game::requestSave() {
+    std::cout << "\n╔════════════════════════════════════════════════════════════╗" << std::endl;
+    std::cout << "║                SAUVEGARDER LA PARTIE                      ║" << std::endl;
+    std::cout << "╚════════════════════════════════════════════════════════════╝" << std::endl;
+    
+    SaveManager saveManager;
+    saveManager.displaySaveSlots();
+    
+    std::cout << "\n[1-3] Choisir un slot de sauvegarde" << std::endl;
+    std::cout << "[0] Annuler" << std::endl;
+    
+    int choice = readChoice("Dans quel slot sauvegarder? ");
+    
+    if (choice >= 1 && choice <= 3) {
+        if (!saveManager.isSlotEmpty(choice)) {
+            std::cout << "\n  Ce slot contient déjà une sauvegarde." << std::endl;
+            std::cout << "Voulez-vous l'écraser? (O/N): ";
+            std::string confirm;
+            std::cin >> confirm;
+            std::cin.ignore();
+            
+            if (confirm != "O" && confirm != "o") {
+                std::cout << "Sauvegarde annulée." << std::endl;
+                return false;
+            }
+        }
+        
+        if (saveManager.saveGame(*this, choice)) {
+            std::cout << "\n Partie sauvegardée avec succès!" << std::endl;
+            std::cout << "Vous pouvez maintenant quitter le jeu en toute sécurité." << std::endl;
+            return true;
+        } else {
+            std::cout << "\n Erreur lors de la sauvegarde." << std::endl;
+            return false;
+        }
+    }
+    
+    std::cout << "Retour au jeu..." << std::endl;
+    return false;
+}
+
+void Game::saveAndQuit(int slotNumber) {
+    SaveManager saveManager;
+    if (saveManager.saveGame(*this, slotNumber)) {
+        std::cout << "Partie sauvegardée. À bientôt!" << std::endl;
+        m_gameEnded = true;
+    }
+}
+
+void Game::markAsStarted() {
+    m_gameStarted = true;
+    m_gameEnded = false;
+}
+
 // Getters
 std::vector<Player>& Game::getPlayers() { return m_players; }
 Market& Game::getMarket() { return m_market; }
-GameSettings& Game::getSettings() { return m_settings; }
 Turn& Game::getCurrentTurn() { return m_currentTurn; }
 Player& Game::getCurrentPlayer() { return m_players[m_currentPlayerIndex]; }
 Player& Game::getNextPlayer() {

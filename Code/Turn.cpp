@@ -48,6 +48,14 @@ void Turn::addCombat(int amount) {
     combatReserve += amount;
 }
 
+void Turn::setGoldReserve(int amount) {
+    goldReserve = amount;
+}
+
+void Turn::setCombatReserve(int amount) {
+    combatReserve = amount;
+}
+
 int Turn::getGoldReserve() const {
     return goldReserve;
 }

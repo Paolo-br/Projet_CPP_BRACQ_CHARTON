@@ -1,46 +1,98 @@
 @echo off
+@echo off
+chcp 65001 >nul
+setlocal
+
 echo ========================================
 echo    HERO REALMS - Compilation et Lancement
 echo ========================================
 echo.
 
-REM Vérifier si WSL est disponible
-wsl --list >nul 2>&1
-if %ERRORLEVEL% EQU 0 (
-    echo WSL detecte ! Compilation via WSL...
-    echo.
-    wsl bash -c "cd '/mnt/c/Users/paolo/OneDrive/Desktop/ET4/C++/Projet/Code' && make clean && make && ./main"
-) else (
-    echo WSL non detecte. Tentative avec g++ local...
-    echo.
-    
-    REM Vérifier si g++ est disponible
-    g++ --version >nul 2>&1
-    if %ERRORLEVEL% EQU 0 (
-        echo Compilation en cours...
-        g++ -Wall -Wextra -std=c++11 main.cpp Player.cpp Deck.cpp Card.cpp ChampionCard.cpp Ability.cpp SacrificeAbility.cpp Hand.cpp InPlayArea.cpp DiscardPile.cpp Market.cpp AllyAbility.cpp ActivateAbility.cpp Faction.cpp Game.cpp GameSettings.cpp PrimaryAbility.cpp Turn.cpp ActionCard.cpp ItemCard.cpp Effect.cpp GoldEffect.cpp AttackEffect.cpp HealEffect.cpp DrawEffect.cpp SacrificeEffect.cpp PrepareChampionEffect.cpp StunChampionEffect.cpp DiscardOpponentEffect.cpp ConditionalEffect.cpp ChoiceEffect.cpp DrawThenDiscardEffect.cpp PutNextCardOnTopEffect.cpp PutNextCardInHandEffect.cpp PutFromDiscardOnTopEffect.cpp OptionalSacrificeEffect.cpp Utils.cpp -o main.exe
-        
-        if %ERRORLEVEL% EQU 0 (
-            echo.
-            echo Compilation reussie ! Lancement du jeu...
-            echo.
-            main.exe
-        ) else (
-            echo.
-            echo ERREUR : La compilation a echoue.
+REM Répertoire du script (avec backslash final)
+set "SCRIPT_DIR=%~dp0"
+
+REM Si l'exécutable existe déjà, lance-le directement (Windows)
+if exist "%SCRIPT_DIR%main.exe" (
+    echo Executable Windows trouve : lancement de main.exe
+    pushd "%SCRIPT_DIR%"
+    main.exe
+    popd
+    goto :end
+)
+pause
+
+REM Si l'exécutable Linux existe (par ex. deja compile via WSL), lance-le via WSL
+for %%F in ("%SCRIPT_DIR%main") do (
+    if exist "%%~fF" (
+        echo Executable Linux trouve : lancement via WSL
+        for /f "usebackq delims=" %%i in (`wsl wslpath "%SCRIPT_DIR%" 2^>nul`) do set "WSL_DIR=%%i"
+        if defined WSL_DIR (
+            wsl bash -c "cd '%WSL_DIR%' && ./main"
             pause
+            goto :end
         )
-    ) else (
-        echo.
-        echo ERREUR : Ni WSL ni g++ n'ont ete trouves.
-        echo.
-        echo Veuillez installer l'un des deux :
-        echo   - WSL : wsl --install
-        echo   - MinGW : https://www.mingw-w64.org/
-        echo.
-        pause
     )
 )
 
-echo.
+REM Tenter la branche WSL (conversion du chemin)
+for /f "usebackq delims=" %%i in (`wsl wslpath "%SCRIPT_DIR%" 2^>nul`) do set "WSL_DIR=%%i"
+if defined WSL_DIR (
+    echo WSL detecte. Compilation via WSL...
+    wsl bash -c "cd '%WSL_DIR%' && make clean && make && ./main"
+    if %ERRORLEVEL% EQU 0 goto :end
+    pause
+    echo Echec de la construction via WSL, tentative locale...
+)
+
+REM Branche locale : utilisation de make si present
+pushd "%SCRIPT_DIR%"
+where make >nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    echo make detecte localement. Lancement de make...
+    make
+    if %ERRORLEVEL% EQU 0 (
+        if exist main.exe (
+            echo Compilation reussie. Lancement...
+                main.exe
+                pause
+            popd
+            goto :end
+        ) else (
+            echo make a termine mais main.exe introuvable.
+        )
+    ) else (
+        echo make a echoue localement.
+    )
+)
+
+REM Si make absent ou a echoue, tenter g++ direct
+g++ --version >nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    echo g++ detecte. Compilation manuelle en cours...
+    REM Compilation explicite (ajuster si vous modifiez l'arborescence)
+    g++ -Wall -Wextra -Werror -std=c++11 -I. -o main.exe ^
+        main.cpp Player.cpp ResourceType.cpp ConditionType.cpp SaveManager.cpp GodMode.cpp InPlayArea.cpp Faction.cpp Game.cpp Turn.cpp Utils.cpp CardFactory.cpp ^
+        Cards/Deck.cpp Cards/Hand.cpp Cards/DiscardPile.cpp Cards/Market.cpp ^
+        CardsType/Card.cpp CardsType/ActionCard.cpp CardsType/ItemCard.cpp CardsType/ChampionCard.cpp ^
+        Abilities/Ability.cpp Abilities/SacrificeAbility.cpp Abilities/AllyAbility.cpp Abilities/ActivateAbility.cpp Abilities/PrimaryAbility.cpp ^
+        Effects/Effect.cpp Effects/GoldEffect.cpp Effects/AttackEffect.cpp Effects/HealEffect.cpp Effects/DrawEffect.cpp Effects/SacrificeEffect.cpp Effects/PrepareChampionEffect.cpp Effects/StunChampionEffect.cpp Effects/DiscardOpponentEffect.cpp Effects/ConditionalEffect.cpp Effects/ChoiceEffect.cpp Effects/DrawThenDiscardEffect.cpp Effects/PutNextCardOnTopEffect.cpp Effects/PutNextCardInHandEffect.cpp Effects/PutFromDiscardOnTopEffect.cpp Effects/PutChampionFromDiscardOnTopEffect.cpp Effects/OptionalSacrificeEffect.cpp
+
+    if %ERRORLEVEL% EQU 0 (
+        echo Compilation reussie. Lancement...
+        main.exe
+        pause
+        popd
+        goto :end
+    ) else (
+        echo Compilation via g++ a echoue.
+    )
+)
+
+echo ERREUR : Impossible de compiler ou d'executer le projet.
+echo Assurez-vous d'avoir WSL (avec make/g++) ou un compilateur g++/make Windows.
+echo Pour distribuer a des non-developpeurs, fournissez l'executable precompile 'main.exe'.
 pause
+popd
+
+:end
+endlocal

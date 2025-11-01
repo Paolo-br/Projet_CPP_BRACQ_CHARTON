@@ -33,6 +33,10 @@ void InPlayArea::clear() {
     m_cards.clear();
 }
 
+void InPlayArea::removeAllCardsNoDelete() {
+    m_cards.clear();
+}
+
 std::vector<Card*>& InPlayArea::getCards() {
     return m_cards;
 }
