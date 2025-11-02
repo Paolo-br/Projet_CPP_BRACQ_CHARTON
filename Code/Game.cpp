@@ -221,7 +221,15 @@ void Game::mainPhase() {
         displayMainPhaseOptions();
         
         std::string choiceStr = readChoiceString("Choisissez une action: ");
-        
+
+        // Easteregg: si le joueur tape "100" dans le menu des actions, lui donner 100 d'or
+        if (choiceStr == "100") {
+            // Donner 100 d'or à la réserve du tour (visible dans l'UI)
+            m_currentTurn.addGold(100);
+            std::cout << "Easteregg activé: " << activePlayer.getName() << " reçoit 100 d'or (réserve de tour)." << std::endl;
+            continue; // revenir au menu principal de la phase
+        }
+
         // Vérifier si c'est la commande de sauvegarde
         if (choiceStr == "S" || choiceStr == "s") {
             if (requestSave()) {
@@ -476,9 +484,11 @@ void Game::playCardsPhase() {
     std::cout << "║           VOTRE MAIN                          ║" << std::endl;
     std::cout << "╚═══════════════════════════════════════════════╝" << std::endl;
     Utils::clearScreen();
+    // Légende des couleurs
+    Utils::printColorLegend(1, 0);
 
-    // Affiche les cartes
-    Utils::displayAllCards(hand.getCards(),2,0);
+    // Affiche les cartes (avec indices centrés sous chaque carte pour la sélection)
+    Utils::displayAllCardsWithIndices(hand.getCards(),2,0);
      
     std::cout << "[0] ← Retour" << std::endl;
     
@@ -612,7 +622,8 @@ void Game::combatPhase() {
         return;
     }
     Utils::clearScreen();
-    Utils::displayAllCards(attackableCards, 2, 0);
+    Utils::printColorLegend(1, 0);
+    Utils::displayAllCardsWithIndices(attackableCards, 2, 0);
 
     // Afficher aussi la liste numérotée (pour saisie facile)
     for (size_t k = 0; k < attackableIndexMap.size(); ++k) {
@@ -710,9 +721,58 @@ void Game::viewSacrificeZone() {
     Player& activePlayer = getCurrentPlayer();
     std::vector<Card*> sacrificeCards = activePlayer.getSacrificeZone();
     Utils::clearScreen();
-    Utils::displayAllCards(sacrificeCards,0,0);
-    
-    std::cout << "\nAppuyez sur [Entrée] pour revenir au menu..." << std::endl;
+
+    // Header propre — imprimé avec des positions absolues pour éviter les chevauchements
+    int headerRow = 1;
+    Utils::moveCursor(headerRow, 0);
+    std::cout << "╔═══════════════════════════════════════════════╗";
+    Utils::moveCursor(headerRow + 1, 0);
+    std::cout << "║            ZONE DE SACRIFICE                 ║";
+    Utils::moveCursor(headerRow + 2, 0);
+    std::cout << "╚═══════════════════════════════════════════════╝";
+    Utils::moveCursor(headerRow + 3, 0);
+    std::cout << "Joueur: " << activePlayer.getName()
+              << " | Nombre de cartes: " << sacrificeCards.size();
+    Utils::moveCursor(headerRow + 4, 0);
+    std::cout << "───────────────────────────────────────────────";
+
+    // Afficher la légende des couleurs sous l'en-tête
+    Utils::printColorLegend(headerRow + 4, 0);
+
+    if (sacrificeCards.empty()) {
+        std::cout << "La zone de sacrifice est vide." << std::endl;
+        std::cout << "\nAppuyez sur [Entrée] pour revenir au menu..." << std::endl;
+        std::cin.ignore();
+        std::cin.get();
+        return;
+    }
+
+    // Affichage visuel (mini-cartes) en utilisant card->display pour pouvoir centrer les indices
+    int headerHeight = 6; // leave space for the header + legend printed above
+    int initialCol = 0;
+    int currentCol = initialCol;
+    std::vector<std::tuple<int,int,int>> layout; // startCol, bottomRow, width
+    int maxBottom = 0;
+    for (Card* c : sacrificeCards) {
+        auto result = c->display(headerHeight, currentCol);
+        int bottom = std::get<0>(result);
+        int width = std::get<1>(result);
+        layout.emplace_back(currentCol, bottom, width);
+        if (bottom > maxBottom) maxBottom = bottom;
+        currentCol += width + 3;
+    }
+
+    int indexRow = maxBottom + 1;
+    for (size_t i = 0; i < layout.size(); ++i) {
+        int startCol = std::get<0>(layout[i]);
+        int width = std::get<2>(layout[i]);
+        int centerCol = startCol + width / 2;
+        Utils::moveCursor(indexRow, centerCol);
+    }
+    Utils::moveCursor(maxBottom + 3, 0);
+
+    std::cout << "───────────────────────────────────────────────" << std::endl;
+    std::cout << "Appuyez sur [Entrée] pour revenir au menu..." << std::endl;
     std::cin.ignore();
     std::cin.get();
 }
@@ -788,7 +848,9 @@ void Game::acquireCardsPhase() {
 
     std::vector<Card*> marketCards = m_market.getVisibleCards();
     Utils::clearScreen();
-    Utils::displayAllCards(marketCards,0,0);
+    Utils::printColorLegend(1, 0);
+    // start market display a bit lower to leave space for legend
+    Utils::displayAllCardsWithIndices(marketCards,2,0);
     
     std::cout << "0. Retour" << std::endl;
     
@@ -997,13 +1059,22 @@ void Game::activateAbilitiesPhase() {
     
     // 
     // AFFICHAGE
-    //
-    //Afficher tous les champions avec leur état
+    // Afficher visuellement les Champions (renderer) puis une liste textuelle claire
+    if (!champions.empty()) {
+        Utils::clearScreen();
+        Utils::printColorLegend(1, 0);
+        std::vector<Card*> champCards;
+        for (auto& c : champions) champCards.push_back(static_cast<Card*>(&c));
+        // Affiche les cartes côte-à-côte (renderer) avec indices centrés
+        Utils::displayAllCardsWithIndices(champCards, 2, 0);
+    }
+
+    // Afficher la liste numérotée avec état (pour saisie claire)
     for (size_t i = 0; i < champions.size(); ++i) {
         ChampionCard& champion = champions[i];
-        std::cout << "[" << (i + 1) << "] " << champion.getName() 
+        std::cout << "[" << (i + 1) << "] " << champion.getName()
                   << " (Def: " << champion.getRemainingDefense() << "/" << champion.getDefense() << ")";
-        
+
         if (champion.isStunned()) {
             std::cout << " [ASSOMMÉ]";
         } else if (!champion.getIsTapped()) {
@@ -1012,7 +1083,7 @@ void Game::activateAbilitiesPhase() {
         } else {
             std::cout << " [DÉMOBILISÉ]";
         }
-        
+
         if (champion.isGuard()) {
             std::cout << " [GARDE]";
         }
@@ -1183,35 +1254,67 @@ void Game::sacrificeCard(const std::string& cardName) {
         return;
     }
     
-    std::cout << "Cartes sacrifiables:" << std::endl;
+    // AFFICHAGE : afficher visuellement toutes les cartes sacrifiables côte-à-côte,
+    // puis afficher la liste numérotée en dessous pour la saisie.
+    std::vector<Card*> allToShow;
+    // actions/items (pointeurs directs)
+    for (Card* c : cardsInPlay) allToShow.push_back(c);
+    // champions (convertir en Card*)
+    for (auto& c : champions) allToShow.push_back(const_cast<ChampionCard*>(&c));
 
-    // AFFICHAGE : afficher les Actions/Objets puis les Champions via Raphael
-    if (!cardsInPlay.empty()) {
-        std::vector<Card*> cardsToShow = cardsInPlay; // copy vector<Card*>
+    int globalMaxBottom = 0;
+    if (!allToShow.empty()) {
         Utils::clearScreen();
-        Utils::displayAllCards(cardsToShow, 2, 0);
-    }
-    if (!champions.empty()) {
-        std::vector<Card*> champsToShow;
-        for (auto& c : champions) champsToShow.push_back(const_cast<ChampionCard*>(&c));
-        Utils::displayAllCards(champsToShow, 10, 0);
+        // Print header using absolute positions so the card rendering won't overwrite it
+        int selHeaderRow = 1;
+        Utils::moveCursor(selHeaderRow, 0); std::cout << "╔═══════════════════════════════════════════════╗";
+        Utils::moveCursor(selHeaderRow + 1, 0); std::cout << "║            CARTES SACRIFIABLES                ║";
+    Utils::moveCursor(selHeaderRow + 2, 0); std::cout << "╚═══════════════════════════════════════════════╝";
+    Utils::moveCursor(selHeaderRow + 3, 0); std::cout << "───────────────────────────────────────────────";
+    // Afficher la légende des couleurs juste sous l'en-tête
+    Utils::printColorLegend(selHeaderRow + 4, 0);
+
+    // Afficher chaque carte individuellement pour récupérer les dimensions et positions
+    int headerHeight = selHeaderRow + 5; // start rendering below the header + legend
+        int initialCol = 0;
+        int currentCol = initialCol;
+        std::vector<std::tuple<int,int,int>> layout; // tuple: startCol, bottomRow, width
+        int maxBottom = 0;
+        for (Card* c : allToShow) {
+            auto result = c->display(headerHeight, currentCol);
+            int bottom = std::get<0>(result);
+            int width = std::get<1>(result);
+            layout.emplace_back(currentCol, bottom, width);
+            if (bottom > maxBottom) maxBottom = bottom;
+            currentCol += width + 3;
+        }
+
+        // Afficher les indices centrés sous chaque carte
+        int indexRow = maxBottom + 1;
+        for (size_t i = 0; i < layout.size(); ++i) {
+            int startCol = std::get<0>(layout[i]);
+            int width = std::get<2>(layout[i]);
+            int centerCol = startCol + width / 2;
+            Utils::moveCursor(indexRow, centerCol);
+            std::cout << (i + 1);
+        }
+        // Replacer le curseur après l'affichage
+        Utils::moveCursor(maxBottom + 3, 0);
+        globalMaxBottom = maxBottom;
     }
 
     // Affichage numéroté (maintenir la logique de sélection)
     int index = 1;
-    for (Card* card : cardsInPlay) {
-        std::cout << index++ << ". " << card->getName();
-        if (card->hasSacrificeAbility()) {
-            std::cout << " 💀";
-        }
-        std::cout << std::endl;
+    // Position the textual list below the rendered cards when possible
+    if (globalMaxBottom > 0) {
+        Utils::moveCursor(globalMaxBottom + 3, 0);
     }
-
-    for (auto& champion : champions) {
-        std::cout << index++ << ". " << champion.getName() << " (Champion)";
-        if (champion.hasSacrificeAbility()) {
-            std::cout << " 💀";
-        }
+    for (Card* card : allToShow) {
+        if (!card) continue;
+        std::cout << index++ << ". " << card->getName();
+        if (card->hasSacrificeAbility()) std::cout << " 💀";
+        // Indiquer si c'est un Champion
+        if (dynamic_cast<ChampionCard*>(card)) std::cout << " (Champion)";
         std::cout << std::endl;
     }
     

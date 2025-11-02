@@ -85,20 +85,22 @@ int displayMainMenu() {
     cout << "[3] Quitter" << endl;
     cout << "\n════════════════════════════════════════════════════════════" << endl;
     
-    int choice;
+    std::string input;
     while (true) {
         cout << "Votre choix: ";
-        cin >> choice;
-        
-        if (cin.fail() || choice < 1 || choice > 3) {
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            cout << "Choix invalide! Veuillez entrer 1, 2 ou 3." << endl;
-            continue;
+        std::getline(cin, input);
+
+        // Tenter de parser un entier
+        try {
+            int choice = std::stoi(input);
+            if (choice >= 1 && choice <= 3) {
+                return choice;
+            }
+        } catch (...) {
+            // ignore
         }
-        
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        return choice;
+
+        cout << "Choix invalide! Veuillez entrer 1, 2 ou 3." << endl;
     }
 }
 

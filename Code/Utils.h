@@ -23,6 +23,10 @@ class ItemCard;
 class Utils {
     public:
     static void displayAllCards(const std::vector<Card*>& cards, int row, int col);
+    // Affiche les cartes (renderer) et imprime un indice centré sous chaque carte (1-based)
+    static void displayAllCardsWithIndices(const std::vector<Card*>& cards, int row, int col);
+    // Imprime une légende des couleurs (e.g., Combat/Heal/Draw/Gold/Sacrifice)
+    static void printColorLegend(int row, int col);
 
     static std::string getColorCode(const std::string& color);
     template<typename T>
@@ -80,6 +84,8 @@ class Utils {
         << std::string(right, ' ')<< " " << cost << resetCode << "|";
     }
     static void printEffect(Card* card, int row, int col, int &indice, int n);
+    // Retourne une description lisible (FR) d'un Effect pour l'affichage sur la carte
+    static std::string describeEffect(Effect* e);
     static void printCenteredPrepareChampionEffect(int totalWidth,const std::string& style="") {
         std::string colorCode;
         std::string styleCode = getStyleCode(style);
