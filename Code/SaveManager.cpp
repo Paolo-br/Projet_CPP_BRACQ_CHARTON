@@ -255,6 +255,7 @@ bool SaveManager::loadGame(Game& game, int slotNumber) {
             Deck deck;
             Hand hand;
             DiscardPile discard;
+            InPlayArea playArea; 
             
             // Charger la main
             int handSize;
@@ -295,13 +296,6 @@ bool SaveManager::loadGame(Game& game, int slotNumber) {
                 }
             }
             
-            // Créer le joueur
-            Player player(playerName, health, deck, hand, discard);
-            player.setGold(gold);
-            if (eliminated) {
-                // Note: Pas de méthode setEliminated, mais le joueur sera éliminé si health <= 0
-            }
-            
             // Charger les Champions en jeu
             int championsSize;
             file >> championsSize;
@@ -334,6 +328,14 @@ bool SaveManager::loadGame(Game& game, int slotNumber) {
                     discard.add(card);
                     std::cout << "    ⚠️ Carte en jeu remise en défausse: " << cardName << std::endl;
                 }
+            }
+            
+            // Créer le joueur APRÈS avoir chargé toutes les cartes dans les structures
+            // Utiliser std::move pour transférer l'ownership des cartes au Player
+            Player player(playerName, health, std::move(deck), std::move(hand), std::move(discard));
+            player.setGold(gold);
+            if (eliminated) {
+                // Note: Pas de méthode setEliminated, mais le joueur sera éliminé si health <= 0
             }
             
             // Charger la zone de sacrifice

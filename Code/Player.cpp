@@ -16,6 +16,15 @@ Player::Player(const std::string& name, int health, const Deck& deck,
     : m_name(name), m_health(health), m_gold(0), m_deck(deck), 
       m_hand(hand), m_discardPile(discardPile), m_sacrificeZone(), m_eliminated(false) {}
 
+// Constructeur avec move semantics (pour le chargement)
+Player::Player(const std::string& name, int health, Deck&& deck,
+               Hand&& hand, DiscardPile&& discardPile)
+    : m_name(name), m_health(health), m_gold(0), 
+      m_deck(std::move(deck)), m_hand(std::move(hand)), 
+      m_discardPile(std::move(discardPile)), m_sacrificeZone(), m_eliminated(false) {
+    std::cout << "Constructeur Player avec move semantics: " << m_name << std::endl;
+}
+
 // 1. Destructeur
 Player::~Player() {
     std::cout << "Destructeur Player: " << m_name << std::endl;

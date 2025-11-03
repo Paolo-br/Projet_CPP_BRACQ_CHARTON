@@ -28,6 +28,9 @@ private:
 public:
     Player(const std::string& name, int health, const Deck& deck,
            const Hand& hand, const DiscardPile& discardPile);
+    // Constructeur avec move semantics pour le chargement
+    Player(const std::string& name, int health, Deck&& deck,
+           Hand&& hand, DiscardPile&& discardPile);
     
     // RÈGLE DES 5 - Tout implémenter
     ~Player();                                      // 1. Destructeur
