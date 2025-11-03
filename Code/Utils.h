@@ -177,9 +177,12 @@ class Utils {
         int left2 = padding2 / 2;
         int right2 = padding2 - left2;
         
-        std::cout << "|" << std::string(left1-1, ' ')
-        << colorCode << value << resetCode << colorCode1 <<  str1 << resetCode  
-        << std::string(right1, ' ') << "|";
+    // Guard against negative sizes when computing padding
+    size_t padLeft1 = (left1 > 0) ? static_cast<size_t>(left1 - 1) : 0;
+    size_t padRight1 = (right1 > 0) ? static_cast<size_t>(right1) : 0;
+    std::cout << "|" << std::string(padLeft1, ' ')
+    << colorCode << value << resetCode << colorCode1 <<  str1 << resetCode  
+    << std::string(padRight1, ' ') << "|";
         moveCursor(row+indice,col);indice++;
 
         std::cout << "|" << std::string(left2, ' ')
@@ -419,9 +422,12 @@ class Utils {
         int right = padding - left;
         
         std::string resetCode = "\033[0m";
-        std::cout << "|" << std::string(left-2, ' ')
-        << colorCode << styleCode << str << resetCode << name << colorCode1 << styleCode1 << str1 << resetCode
-        << std::string(right-3, ' ') << "|";
+    // Avoid negative sizes when subtracting constants from padding
+    size_t padLeft = (left > 2) ? static_cast<size_t>(left - 2) : 0;
+    size_t padRight = (right > 3) ? static_cast<size_t>(right - 3) : 0;
+    std::cout << "|" << std::string(padLeft, ' ')
+    << colorCode << styleCode << str << resetCode << name << colorCode1 << styleCode1 << str1 << resetCode
+    << std::string(padRight, ' ') << "|";
     }
     template<typename T>
     static std::string EntireName(const T& content,int cost){

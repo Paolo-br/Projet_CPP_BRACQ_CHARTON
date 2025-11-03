@@ -26,6 +26,9 @@ ALL_OBJ=$(CARDS_OBJ) $(CARDS_TYPE_OBJ) $(EFFECTS_OBJ) $(ABILITIES_OBJ) $(ROOT_OB
 main: main.o $(ALL_OBJ)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
+display_all_cards_gui: display_all_cards_gui.o $(ALL_OBJ)
+	$(CXX) $(CXXFLAGS) $^ -o $@
+
 
 .PHONY: run clean
 
@@ -35,3 +38,4 @@ run: main
 clean:
 	rm -f *.o *~ *.core main
 	rm -f $(CARDS_DIR)/*.o $(CARDS_TYPE_DIR)/*.o $(EFFECTS_DIR)/*.o $(ABILITIES_DIR)/*.o
+	rm -f display_all_cards_gui display_all_cards_gui.o

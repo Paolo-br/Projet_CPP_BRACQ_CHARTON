@@ -356,11 +356,16 @@ std::tuple<int,int> ChampionCard::display(int row, int col) {
         Utils::moveCursor(row+indice,col);
         indice++;
     }
-    if(getIsGuard() == true){
+
+    {
         std::ostringstream oss;
-        oss << "Guard " << getDefense();
-        std::string str = oss.str();
-        Utils::printCentered(str,n,"","bold");
+        if (getIsGuard()) {
+            oss << "Guard " << getDefense();
+        } else {
+            oss << "Defense " << getDefense();
+        }
+        std::string defStr = oss.str();
+        Utils::printCentered(defStr, n, "", "bold");
         Utils::moveCursor(row+indice,col);
         indice++;
     }
