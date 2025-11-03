@@ -151,11 +151,9 @@ bool ActionCard::hasSacrificeAbility() const {
 std::tuple<int,int> ActionCard::display(int row, int col){
     int indice = 1;
     row++;
-    // std::vector<Ability*> liste_abi=m_abilities;
     int n = Utils::countChar(Utils::EntireName(getName(),getCost()))-2;
     n = n - Utils::countSpaces(getName());
     if(n<21) n=21;
-    // std::vector<Effect*> liste_effet=m_effects;
     Faction faction = getFaction();
     Utils::moveCursor(row,col);row++;
     Utils::printBarre(n+1,0);

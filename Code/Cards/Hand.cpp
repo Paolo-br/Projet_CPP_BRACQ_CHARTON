@@ -16,6 +16,51 @@ Hand::~Hand() {
     }
     m_cards.clear();
 }
+
+// Constructeur de copie (copie superficielle des pointeurs)
+Hand::Hand(const Hand& other) 
+    : m_cards(other.m_cards) {
+    std::cout << "Constructeur copie Hand (" << m_cards.size() << " cartes)" << std::endl;
+}
+
+// Opérateur d'affectation copie
+Hand& Hand::operator=(const Hand& other) {
+    if (this != &other) {
+        // Nettoyer les cartes existantes
+        for (auto card : m_cards) {
+            delete card;
+        }
+        m_cards.clear();
+        
+        // Copie superficielle des pointeurs
+        m_cards = other.m_cards;
+    }
+    std::cout << "Opérateur affectation copie Hand" << std::endl;
+    return *this;
+}
+
+// Constructeur de déplacement
+Hand::Hand(Hand&& other) noexcept 
+    : m_cards(std::move(other.m_cards)) {
+    // Le vecteur de l'autre est maintenant vide (move du vector)
+    std::cout << "Constructeur déplacement Hand (" << m_cards.size() << " cartes)" << std::endl;
+}
+
+// Opérateur d'affectation déplacement
+Hand& Hand::operator=(Hand&& other) noexcept {
+    if (this != &other) {
+        // Nettoyer nos cartes
+        for (auto card : m_cards) {
+            delete card;
+        }
+        m_cards.clear();
+        
+        // Prendre les cartes de l'autre
+        m_cards = std::move(other.m_cards);
+    }
+    std::cout << "Opérateur affectation déplacement Hand" << std::endl;
+    return *this;
+}
 void Hand::add(Card* card){
     m_cards.push_back(card);
 }

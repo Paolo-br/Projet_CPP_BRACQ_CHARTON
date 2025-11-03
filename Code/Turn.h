@@ -73,4 +73,4 @@ public:
     void resetAcquireFlags(); // Reset les flags après acquisition
 };
 
-#endif // TURN_H
+#endif

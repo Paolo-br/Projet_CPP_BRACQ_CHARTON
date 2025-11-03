@@ -12,10 +12,15 @@ class DiscardPile {
     std::vector<Card*> m_cards;
 
     public:
-     // RÈGLE DES 0 - Pas besoin de destructeur/copie personnalisés
     DiscardPile();
     DiscardPile(std::vector<Card*> cards);
     ~DiscardPile();
+    
+    // RÈGLE DES 5
+    DiscardPile(const DiscardPile& other);              // Constructeur de copie
+    DiscardPile& operator=(const DiscardPile& other);   // Opérateur d'affectation copie
+    DiscardPile(DiscardPile&& other) noexcept;          // Constructeur de déplacement
+    DiscardPile& operator=(DiscardPile&& other) noexcept; // Opérateur d'affectation déplacement
     void add(Card* card);
     void clear();
     std::vector<Card*> getCards() { return m_cards; }

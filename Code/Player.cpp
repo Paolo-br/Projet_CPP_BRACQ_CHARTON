@@ -31,13 +31,29 @@ Player::Player(const Player& other)
     : m_name(other.m_name), m_health(other.m_health), m_gold(other.m_gold),
       m_deck(other.m_deck), m_hand(other.m_hand), 
       m_discardPile(other.m_discardPile), m_playArea(other.m_playArea),
-      m_sacrificeZone(other.m_sacrificeZone), m_eliminated(other.m_eliminated) {
+      m_sacrificeZone(), m_eliminated(other.m_eliminated) {
+    // Copie profonde de la zone de sacrifice
+    for (Card* card : other.m_sacrificeZone) {
+        if (card) {
+            // Note: Pas de copie profonde des cartes elles-mêmes
+            // car elles sont gérées par ailleurs. On ne copie que les pointeurs.
+            // MAIS attention: cela signifie que les deux Players partageront
+            // les mêmes cartes. Pour une vraie copie profonde, il faudrait cloner.
+            m_sacrificeZone.push_back(card);
+        }
+    }
     std::cout << "Constructeur copie Player: " << m_name << std::endl;
 }
 
 // 3. Opérateur d'affectation copie
 Player& Player::operator=(const Player& other) {
     if (this != &other) {
+        // Nettoyer d'abord la zone de sacrifice existante
+        for (auto card : m_sacrificeZone) {
+            delete card;
+        }
+        m_sacrificeZone.clear();
+        
         m_name = other.m_name;
         m_health = other.m_health;
         m_gold = other.m_gold;
@@ -45,7 +61,15 @@ Player& Player::operator=(const Player& other) {
         m_hand = other.m_hand;
         m_discardPile = other.m_discardPile;
         m_playArea = other.m_playArea;
-        m_sacrificeZone = other.m_sacrificeZone;
+        
+        // Copie superficielle de la zone de sacrifice (pointeurs partagés)
+        // Note: Pour une vraie copie profonde, il faudrait cloner les cartes
+        for (Card* card : other.m_sacrificeZone) {
+            if (card) {
+                m_sacrificeZone.push_back(card);
+            }
+        }
+        
         m_eliminated = other.m_eliminated;
     }
     std::cout << "Opérateur affectation copie Player: " << m_name << std::endl;
@@ -63,12 +87,19 @@ Player::Player(Player&& other) noexcept
     other.m_health = 0;
     other.m_gold = 0;
     other.m_eliminated = true;
+    other.m_sacrificeZone.clear();
     std::cout << "Constructeur déplacement Player: " << m_name << std::endl;
 }
 
 // 5. Opérateur d'affectation déplacement
 Player& Player::operator=(Player&& other) noexcept {
     if (this != &other) {
+        // Nettoyer d'abord notre zone de sacrifice
+        for (auto card : m_sacrificeZone) {
+            delete card;
+        }
+        m_sacrificeZone.clear();
+        
         m_name = std::move(other.m_name);
         m_health = other.m_health;
         m_gold = other.m_gold;
@@ -83,6 +114,7 @@ Player& Player::operator=(Player&& other) noexcept {
         other.m_health = 0;
         other.m_gold = 0;
         other.m_eliminated = true;
+        other.m_sacrificeZone.clear();
     }
     std::cout << "Opérateur affectation déplacement Player: " << m_name << std::endl;
     return *this;
@@ -358,7 +390,7 @@ int Player::getGold(){ return m_gold; }
 
 
 void Player::addCardToPlayArea(Card* card) {
-    if (card->getType() == "Action" || card->getType() == "Objet") {
+    if (card->getType() == "Action" || card->getType() == "Item") {
         m_playArea.add(card);
         std::cout << m_name << ": " << card->getName() << " ajoutée à la zone de jeu." << std::endl;
     } else if (card->getType() == "Champion") {

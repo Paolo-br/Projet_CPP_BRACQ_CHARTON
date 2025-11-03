@@ -84,7 +84,6 @@ class Utils {
         << std::string(right, ' ')<< " " << cost << resetCode << "|";
     }
     static void printEffect(Card* card, int row, int col, int &indice, int n);
-    // Retourne une description lisible (FR) d'un Effect pour l'affichage sur la carte
     static std::string describeEffect(Effect* e);
     static void printCenteredPrepareChampionEffect(int totalWidth,const std::string& style="") {
         std::string colorCode;

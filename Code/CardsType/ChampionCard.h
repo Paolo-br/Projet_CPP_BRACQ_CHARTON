@@ -68,6 +68,8 @@ class ChampionCard : public Card{
     bool hasAllyAbility() const override;
     bool hasSacrificeAbility() const override;
 
+    Card* clone() const override { return new ChampionCard(*this); }
+
     // Gestion des dégâts
     void takeDamage(int damage);
     void resetDamage();  // Reset des dégâts en fin de tour

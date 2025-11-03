@@ -21,6 +21,11 @@ class Deck {
      // RÈGLE DES 0 - Pas besoin de destructeur/copie personnalisés
     Deck();
     Deck(const std::vector<Card*>& cards);
+    Deck(const Deck& other);
+    Deck& operator=(const Deck& other);
+    Deck(std::vector<Card*>&& cards);
+    Deck(Deck&& other) noexcept;
+    Deck& operator=(Deck&& other) noexcept;
     ~Deck();
     void shuffle();
     std::vector<Card*> getCards();

@@ -30,20 +30,10 @@ public:
     Game& operator=(Game&& other) noexcept;
 
     void addPlayer(const Player& player);
+    void addPlayer(Player&& player); // Surcharge pour move semantics
 
     void start();
     void playTurn();
-
-
-
-    void playCard(Card* card, Player* target = nullptr);
-    void acquireCard(Card* card);
-    void attackPlayer(Player& target, int combat);
-    void attackChampion(ChampionCard& target, int combat);
-    
-
-
-
     
     // Getters
     std::vector<Player>& getPlayers();
@@ -53,15 +43,11 @@ public:
     Player& getCurrentPlayer();
     Player& getNextPlayer();
     bool isGameOver() const;
-    bool isMainPhaseActive() const { return m_mainPhaseActive; }
-    GodMode& getGodMode() { return m_godMode; }
-
+    bool isMainPhaseActive() const ;
+    GodMode& getGodMode();
     // Méthodes pour l'interaction joueur
     void playCardFromHand(int handIndex);
-    void activateChampionAbility(const std::string& championName);
     void acquireCardFromMarket(int marketIndex);
-    void attackPlayer(int targetPlayerIndex);
-    void attackChampion(int targetPlayerIndex, const std::string& championName);
     void useAllyAbility(const std::string& cardName);
     void sacrificeCard(const std::string& cardName);
 

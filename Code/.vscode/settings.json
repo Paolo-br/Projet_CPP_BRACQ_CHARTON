@@ -98,7 +98,9 @@
     "stdexcept": "cpp",
     "streambuf": "cpp",
     "typeinfo": "cpp",
-    "set": "cpp"
+    "set": "cpp",
+    "ctime": "cpp",
+    "iomanip": "cpp"
   },
   "makefile.configureOnOpen": false
 }

@@ -8,7 +8,6 @@
 
 class ItemCard : public Card {
 private:
-    std::string m_type;
     std::vector<Effect*> m_effects;
     std::vector<Ability*> m_abilities;   // Pour Sacrifice abilities principalement
 
@@ -29,7 +28,6 @@ public:
 
 
     // Implémentation des méthodes virtuelles pures
-    std::string getType() const override { return m_type; }
     std::string getName() const override;
     void executeEffects(Player& player, Turn& turn) override;
     std::tuple<int,int> display(int row,int col) override;
@@ -42,6 +40,7 @@ public:
     // Vérification des abilities
     bool hasAllyAbility() const override;
     bool hasSacrificeAbility() const override;
+    Card* clone() const override { return new ItemCard(*this); }
 };
 #endif
 

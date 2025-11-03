@@ -20,6 +20,9 @@ class Card {
 	virtual ~Card()=default; // Règle des 0
     virtual std::vector<Ability*> getAbilities() const=0;
 
+    // Clone pour copie profonde polymorphique
+    virtual Card* clone() const = 0;
+
 
 	virtual std::string getName() const;
     virtual std::vector<Effect*> getEffect() const=0;

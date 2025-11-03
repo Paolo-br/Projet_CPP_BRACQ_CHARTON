@@ -8,10 +8,15 @@
 class Hand {
     std::vector<Card*> m_cards;
     public:
-     // RÈGLE DES 0 - Pas besoin de destructeur/copie personnalisés
     Hand();
     Hand(std::vector<Card*> cards);
     ~Hand();
+    
+    // RÈGLE DES 5
+    Hand(const Hand& other);              // Constructeur de copie
+    Hand& operator=(const Hand& other);   // Opérateur d'affectation copie
+    Hand(Hand&& other) noexcept;          // Constructeur de déplacement
+    Hand& operator=(Hand&& other) noexcept; // Opérateur d'affectation déplacement
     void add(Card* card);
     Card* draw();
     bool remove(Card* card);

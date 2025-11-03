@@ -10,6 +10,50 @@ Deck::Deck(const std::vector<Card*>& cards) : m_cards(cards) {
     std::cout << "Deck créé avec " << cards.size() << " cartes" << std::endl;
 }
 
+
+Deck::Deck(const Deck& other) {
+    std::cout << "Constructeur copie Deck (deep)" << std::endl;
+    for (auto card : other.m_cards) {
+        if (card) m_cards.push_back(card->clone());
+    }
+}
+
+Deck& Deck::operator=(const Deck& other) {
+    if (this != &other) {
+        // delete existing
+        for (auto c : m_cards) delete c;
+        m_cards.clear();
+        // deep copy
+        for (auto card : other.m_cards) {
+            if (card) m_cards.push_back(card->clone());
+        }
+    }
+    return *this;
+}
+
+// Constructeur qui prend la propriété d'un vecteur (move)
+Deck::Deck(std::vector<Card*>&& cards) : m_cards(std::move(cards)) {
+    std::cout << "Deck créé (move) avec " << m_cards.size() << " cartes" << std::endl;
+}
+
+// Constructeur déplacement
+Deck::Deck(Deck&& other) noexcept : m_cards(std::move(other.m_cards)) {
+    other.m_cards.clear();
+    std::cout << "Constructeur déplacement Deck" << std::endl;
+}
+
+// Opérateur d'affectation déplacement
+Deck& Deck::operator=(Deck&& other) noexcept {
+    if (this != &other) {
+        // delete current owned cards
+        for (auto card : m_cards) delete card;
+        m_cards = std::move(other.m_cards);
+        other.m_cards.clear();
+        std::cout << "Opérateur affectation déplacement Deck" << std::endl;
+    }
+    return *this;
+}
+
 Deck::~Deck() {
     std::cout << "Destructeur Deck (" << m_cards.size() << " cartes)" << std::endl;
     // Supprimer toutes les cartes restantes détenues par le deck

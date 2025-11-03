@@ -918,7 +918,7 @@ Card* CardFactory::createCard(const std::string& cardName) {
     }
     
     // Carte inconnue
-    std::cerr << "⚠️ CardFactory: Carte inconnue '" << cardName << "'" << std::endl;
+    std::cerr << "CardFactory: Carte inconnue '" << cardName << "'" << std::endl;
     std::cerr << "   Création d'une carte de remplacement (Or)" << std::endl;
     
     // Créer une carte de remplacement pour éviter les crashes

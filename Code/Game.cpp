@@ -51,6 +51,10 @@ Game::~Game() {
     std::cout << "Destructeur Game" << std::endl;
 }
 
+GodMode& Game::getGodMode() { return m_godMode; }
+
+bool Game::isMainPhaseActive() const { return m_mainPhaseActive; }
+
 // 2. Constructeur copie
 Game::Game(const Game& other)
         : m_players(other.m_players), m_market(other.m_market),
@@ -111,6 +115,15 @@ void Game::addPlayer(const Player& player) {
     if (!m_gameStarted) {
         m_players.push_back(player);
         std::cout << "Joueur " << player.getName() << " ajouté à la partie." << std::endl;
+    } else {
+        std::cerr << "Impossible d'ajouter un joueur : la partie a déjà commencé." << std::endl;
+    }
+}
+
+void Game::addPlayer(Player&& player) {
+    if (!m_gameStarted) {
+        m_players.push_back(std::move(player));
+        std::cout << "Joueur " << m_players.back().getName() << " ajouté à la partie (move)." << std::endl;
     } else {
         std::cerr << "Impossible d'ajouter un joueur : la partie a déjà commencé." << std::endl;
     }
@@ -212,7 +225,7 @@ void Game::mainPhase() {
         std::cerr << "ERREUR : mainPhase() appelée alors que la phase actuelle n'est pas MAIN!" << std::endl;
     }
     
- std::cout << "\nPHASE PRINCIPALE - " << activePlayer.getName() << std::endl;
+ std::cout << "\nPHASE PRINCIPALE - " << activePlayer.getName() << " - " << activePlayer.getHealth()<<" PV"<<std::endl;
     std::cout << "Ressources disponibles: " << m_currentTurn.getGoldReserve() << " d'Or et " 
               << m_currentTurn.getCombatReserve() << " de combat " << std::endl;
 
@@ -283,7 +296,7 @@ void Game::displayMainPhaseOptions() {
     std::cout << "Main: " << activePlayer.getHand().size() << " | ";
     std::cout << "💰: " << m_currentTurn.getGoldReserve() << " | ";
     std::cout << "⚔️: " << m_currentTurn.getCombatReserve() << " | ";
-    std::cout << "♟️: " << playArea.getChampionCount() << std::endl;
+    std::cout << "Champions: "<< playArea.getChampionCount() << std::endl;
     std::cout << "───────────────────────────────────────────────" << std::endl;
     
     // Options
@@ -316,7 +329,7 @@ void Game::displayMainPhaseOptions() {
     if (m_currentTurn.getCombatReserve() == 0) {
         std::cout << " (Pas de Combat)";
     } else {
-        std::cout << " (" << m_currentTurn.getCombatReserve() << " ⚔️)";
+        std::cout << " (" << m_currentTurn.getCombatReserve() << " ⚔️  )";
     }
     std::cout << std::endl;
     
@@ -642,9 +655,41 @@ void Game::combatPhase() {
     
     std::cout << "0. Retour" << std::endl;
     
+    std::string targetChoiceStr = readChoiceString("Votre choix: ");
+    
+    // Vérifier si c'est "P" pour attaquer le joueur
+    if (targetChoiceStr == "P" || targetChoiceStr == "p") {
+        if (hasGuard) {
+            std::cout << "Impossible d'attaquer directement ! Un Garde protège." << std::endl;
+            return;
+        }
+        
+        int combatUsed;
+        std::cout << "\nAttaque sur " << targetPlayer.getName() << std::endl;
+        std::cout << "Combien de Combat utiliser? (Max: " 
+                  << m_currentTurn.getCombatReserve() << "): ";
+        std::cin >> combatUsed;
+        
+        if (combatUsed > 0 && combatUsed <= m_currentTurn.getCombatReserve()) {
+            m_currentTurn.spendCombat(combatUsed);
+            targetPlayer.takeDamage(combatUsed);
+            std::cout << "Attaque réussie! " << targetPlayer.getName()
+                      << " perd " << combatUsed << " PV → " 
+                      << targetPlayer.getHealth() << " PV restants" << std::endl;
+        } else {
+            std::cout << "Quantité de Combat invalide!" << std::endl;
+        }
+        return;
+    }
+    
+    // Sinon, c'est un nombre
     int targetChoice;
-    std::cout << "Votre choix: ";
-    std::cin >> targetChoice;
+    try {
+        targetChoice = std::stoi(targetChoiceStr);
+    } catch (const std::exception&) {
+        std::cout << "Choix invalide!" << std::endl;
+        return;
+    }
     
     if (targetChoice == 0) return;
     
@@ -854,10 +899,23 @@ void Game::acquireCardsPhase() {
     
     std::cout << "0. Retour" << std::endl;
     
+    // Option supplémentaire : acheter une Gemme de Feu (pile distincte)
+    int extraOptionIndex = static_cast<int>(m_market.getVisibleCardsCount()) + 1;
+    std::cout << extraOptionIndex << ". Acheter une Gemme de Feu (" << m_market.getFireGems().size() << " disponibles, coût: 2 Or)" << std::endl;
+
     int choice = readChoice("Choisissez une carte à acheter: ");
-    
+
     if (choice > 0 && choice <= m_market.getVisibleCardsCount()) {
         acquireCardFromMarket(choice - 1);
+    } else if (choice == extraOptionIndex) {
+        // Acheter une Gemme de Feu depuis la pile dédiée
+        Player& activePlayer = getCurrentPlayer();
+        int gold = m_currentTurn.getGoldReserve();
+        // Market::buyFireGem attend une référence int& et mettra à jour 'gold' si l'achat réussit
+        if (m_market.buyFireGem(activePlayer, gold)) {
+            // Synchroniser la réserve d'or du tour
+            m_currentTurn.setGoldReserve(gold);
+        }
     }
 }
 
@@ -1348,8 +1406,8 @@ void Game::sacrificeCard(const std::string& cardName) {
                 }
             }
             
-            // Vérifier si c'est une Gemme de Feu
-            if (card->getName() == "Gemme de Feu") {
+            // Vérifier si c'est une Fire Gem
+            if (card->getName() == "Fire Gem") {
                 std::cout << "→ Gemme de Feu retourne dans la pile Gemmes de Feu" << std::endl;
                 // Ajouter la carte à la pile de Gemmes de Feu du marché
                 ItemCard* fireGem = dynamic_cast<ItemCard*>(card);
@@ -1378,7 +1436,7 @@ void Game::sacrificeCard(const std::string& cardName) {
             }
             
             // Vérifier si c'est une Gemme de Feu (peu probable pour un Champion)
-            if (champion.getName() == "Gemme de Feu") {
+            if (champion.getName() == "Fire Gem") {
                 std::cout << "→ Gemme de Feu retourne dans la pile Gemmes de Feu" << std::endl;
                 // Normalement, une Gemme de Feu n'est pas un Champion, mais par sécurité
             } else {

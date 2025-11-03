@@ -37,5 +37,6 @@ public:
     // Vérification des abilities
     bool hasAllyAbility() const override;
     bool hasSacrificeAbility() const override;
+    Card* clone() const override { return new ActionCard(*this); }
 };
 #endif

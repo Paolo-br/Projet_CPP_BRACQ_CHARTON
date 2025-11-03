@@ -27,7 +27,7 @@ ItemCard::~ItemCard() {
 
 // 2. Constructeur de copie (COPIE PROFONDE)
 ItemCard::ItemCard(const ItemCard& other)
-    : Card(other), m_type(other.m_type) {
+    : Card(other) {
     for (auto effect : other.m_effects) {
         m_effects.push_back(effect->clone());
     }
@@ -40,7 +40,6 @@ ItemCard::ItemCard(const ItemCard& other)
 ItemCard& ItemCard::operator=(const ItemCard& other) {
     if (this != &other) {
         Card::operator=(other);
-        m_type = other.m_type;
         for (auto effect : m_effects) {
             delete effect;
         }
@@ -62,7 +61,7 @@ ItemCard& ItemCard::operator=(const ItemCard& other) {
 
 // 4. Constructeur de déplacement
 ItemCard::ItemCard(ItemCard&& other) noexcept
-    : Card(std::move(other)), m_type(std::move(other.m_type)), 
+    : Card(std::move(other)), 
       m_effects(std::move(other.m_effects)), m_abilities(std::move(other.m_abilities)) {
     other.m_effects.clear();
     other.m_abilities.clear();
@@ -73,7 +72,6 @@ ItemCard::ItemCard(ItemCard&& other) noexcept
 ItemCard& ItemCard::operator=(ItemCard&& other) noexcept {
     if (this != &other) {
         Card::operator=(std::move(other));
-        m_type = std::move(other.m_type);
         m_effects = std::move(other.m_effects);
         m_abilities = std::move(other.m_abilities);
         other.m_effects.clear();

@@ -234,7 +234,10 @@ bool SaveManager::loadGame(Game& game, int slotNumber) {
         file >> goldReserve >> combatReserve;
         file.ignore();
         
-        std::cout << "⏳ Chargement de " << playerCount << " joueur(s)..." << std::endl;
+    std::cout << "⏳ Chargement de " << playerCount << " joueur(s)..." << std::endl;
+    // Collecter les Fire Gems trouvées dans les zones de sacrifice pour les restaurer
+    // dans le marché après l'initialisation de celui-ci.
+    std::vector<Card*> savedFireGems;
         
         // Charger chaque joueur
         for (int p = 0; p < playerCount; ++p) {
@@ -310,9 +313,12 @@ bool SaveManager::loadGame(Game& game, int slotNumber) {
                 file >> currentDamage >> isTapped;
                 file.ignore();
                 
-                // TODO: Recréer les Champions (complexe car nécessite toutes les abilities)
-                // Pour l'instant, on ignore les Champions en jeu
-                std::cout << "    ⚠️ Champion ignoré: " << championName << std::endl;
+                // Recréer le Champion et le placer dans la défausse
+                Card* card = CardFactory::createCard(championName);
+                if (card) {
+                    discard.add(card);
+                    std::cout << "    ⚠️ Champion remis en défausse: " << championName << std::endl;
+                }
             }
             
             // Charger les cartes en jeu (non-champions)
@@ -322,9 +328,12 @@ bool SaveManager::loadGame(Game& game, int slotNumber) {
             for (int i = 0; i < cardsInPlaySize; ++i) {
                 std::string cardName;
                 std::getline(file, cardName);
-                // Les cartes en jeu iront en défausse à la fin du tour
-                // On les ignore pour simplifier
-                std::cout << "    ⚠️ Carte en jeu ignorée: " << cardName << std::endl;
+                // Recréer la carte et la placer dans la défausse
+                Card* card = CardFactory::createCard(cardName);
+                if (card) {
+                    discard.add(card);
+                    std::cout << "    ⚠️ Carte en jeu remise en défausse: " << cardName << std::endl;
+                }
             }
             
             // Charger la zone de sacrifice
@@ -336,12 +345,18 @@ bool SaveManager::loadGame(Game& game, int slotNumber) {
                 std::getline(file, cardName);
                 Card* card = CardFactory::createCard(cardName);
                 if (card) {
-                    player.addToSacrificeZone(card);
+                    // Si c'est une Fire Gem, on la mettra dans la pile FireGems du marché
+                    // après l'initialisation du marché pour respecter la règle.
+                    if (card->getName() == "Fire Gem") {
+                        savedFireGems.push_back(card);
+                    } else {
+                        player.addToSacrificeZone(card);
+                    }
                 }
             }
             
-            // Ajouter le joueur au jeu
-            game.addPlayer(player);
+            // Ajouter le joueur au jeu avec std::move pour éviter la copie
+            game.addPlayer(std::move(player));
         }
         
         file.close();
@@ -349,6 +364,17 @@ bool SaveManager::loadGame(Game& game, int slotNumber) {
         // Initialiser le marché
         std::cout << "\n🎮 Initialisation du marché..." << std::endl;
         game.getMarket().initializeBaseSet();
+
+        // Restaurer les Fire Gems sauvegardées en les plaçant dans la pile FireGems du marché
+        for (Card* c : savedFireGems) {
+            ItemCard* ic = dynamic_cast<ItemCard*>(c);
+            if (ic) {
+                game.getMarket().getFireGems().push_back(ic);
+            } else {
+                // si le cast échoue, éviter fuite mémoire en plaçant dans la défausse générale
+                game.getPlayers().front().getDiscardPile().add(c);
+            }
+        }
         
         // Restaurer l'état du tour
         game.getCurrentTurn().setGoldReserve(goldReserve);
